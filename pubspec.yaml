@@ -1,6 +1,6 @@
 name: rustic
 description: Various constructs inspired by the Rust programming language.
-version: 0.1.0
+version: 0.1.1
 repository: https://github.com/skreborn/rustic
 
 environment:
