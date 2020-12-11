@@ -15,5 +15,5 @@ void generate(String path, List<String> lines) async {
 
   final formatResult = await DartFormatCommand(file.path).run();
 
-  stdout.writeln(formatResult.i1.join('\n'));
+  stdout.writeln(formatResult.output.join('\n'));
 }

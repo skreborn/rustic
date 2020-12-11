@@ -1,7 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:rustic/tuple.dart';
+class DartCommandResult {
+  final int code;
+  final List<String> output;
+
+  DartCommandResult(this.code, this.output);
+}
 
 abstract class DartCommand {
   final String targetPath;
@@ -11,7 +16,7 @@ abstract class DartCommand {
 
   const DartCommand._(this.targetPath);
 
-  Future<Tuple2<int, List<String>>> run() async {
+  Future<DartCommandResult> run() async {
     final process = await Process.start('dart', [command, ...args, targetPath]);
 
     final output = <String>[];
@@ -19,7 +24,7 @@ abstract class DartCommand {
     process.stdout.transform(utf8.decoder).transform(const LineSplitter()).listen(output.add);
     process.stderr.transform(utf8.decoder).transform(const LineSplitter()).listen(output.add);
 
-    return Tuple2(await process.exitCode, output);
+    return DartCommandResult(await process.exitCode, output);
   }
 }
 
