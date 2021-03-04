@@ -51,7 +51,8 @@ abstract class Result<T, E> extends Equatable {
 
   /// Encloses any number of operations, optionally returning early on failure.
   ///
-  /// [collector] provides a [Checker] that allows for an early return in case of a failure.
+  /// [collector] provides a [Checker] that allows for an early return in case
+  /// of a failure.
   ///
   /// ```
   /// final collected = Result.collect<int, String>((check) {
@@ -84,8 +85,8 @@ abstract class Result<T, E> extends Equatable {
 
   /// Executes [fn] that might throw an [Exception].
   ///
-  /// [mapEx] optionally maps an [Exception] to an [Err]. Unhandled exceptions are rethrown
-  /// unchanged.
+  /// [mapEx] optionally maps an [Exception] to an [Err]. Unhandled exceptions
+  /// are rethrown unchanged.
   ///
   /// ```
   /// final caught = Result.catchException<int, String>(() {
@@ -202,8 +203,8 @@ abstract class Result<T, E> extends Equatable {
   ///
   /// If `this` is an [Err], [ifErr] is called to compute a fallback value.
   ///
-  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is an [Err] and
-  /// [ifErr] is `null`.
+  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is
+  /// an [Err] and [ifErr] is `null`.
   ///
   /// ```
   /// print(Ok(2).unwrap()); // "2"
@@ -215,8 +216,8 @@ abstract class Result<T, E> extends Equatable {
   ///
   /// If `this` is an [Ok], [ifOk] is called to compute a fallback value.
   ///
-  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is an [Ok] and [ifOk]
-  /// is `null`.
+  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is
+  /// an [Ok] and [ifOk] is `null`.
   ///
   /// ```
   /// print(Ok(2).unwrapErr()); // Throws a `StateError`
@@ -226,7 +227,8 @@ abstract class Result<T, E> extends Equatable {
 
   /// Transforms the contained value, if any, by applying [map] to it.
   ///
-  /// If `this` is an [Err], and [ifErr] is not `null`, it is called to compute a fallback value.
+  /// If `this` is an [Err], and [ifErr] is not `null`, it is called to compute
+  /// a fallback value.
   ///
   /// ```
   /// print(Ok(2).map((_) => 'ok')); // "Ok(ok)"
@@ -236,7 +238,8 @@ abstract class Result<T, E> extends Equatable {
 
   /// Transforms the contained error, if any, by applying [map] to it.
   ///
-  /// If `this` is an [Ok], and [ifOk] is not `null`, it is called to compute a fallback value.
+  /// If `this` is an [Ok], and [ifOk] is not `null`, it is called to compute a
+  /// fallback value.
   ///
   /// ```
   /// print(Ok(2).map((_) => 'err')); // "Ok(2)"
@@ -244,7 +247,8 @@ abstract class Result<T, E> extends Equatable {
   /// ```
   Result<T, F> mapErr<F>(F Function(E error) map, {F Function(T value) ifOk});
 
-  /// Returns the result of calling [other] if `this` is an [Ok], otherwise [Err].
+  /// Returns the result of calling [other] if `this` is an [Ok], otherwise
+  /// [Err].
   ///
   /// ```
   /// print(Ok(2).and((_) => Ok(3)); // "Ok(3)"
@@ -252,7 +256,8 @@ abstract class Result<T, E> extends Equatable {
   /// ```
   Result<U, E> and<U>(Result<U, E> Function(T value) other);
 
-  /// Returns [Ok] if `this` is an [Ok], otherwise the result of calling [other].
+  /// Returns [Ok] if `this` is an [Ok], otherwise the result of calling
+  /// [other].
   ///
   /// ```
   /// print(Ok(2).or((_) => Ok(3)); // "Ok(2)"
@@ -276,8 +281,8 @@ abstract class Result<T, E> extends Equatable {
 extension OkResult<T> on Result<T, Never> {
   /// Returns the contained value.
   ///
-  /// Unlike [Result.unwrap()], this method is known to never throw because the error variant cannot
-  /// possibly be instantiated.
+  /// Unlike [Result.unwrap()], this method is known to never throw because the
+  /// error variant cannot possibly be instantiated.
   ///
   /// ```
   /// print(Ok(2).value); // "2"
@@ -289,8 +294,8 @@ extension OkResult<T> on Result<T, Never> {
 extension ErrResult<E> on Result<Never, E> {
   /// Returns the contained error.
   ///
-  /// Unlike [Result.unwrapErr()], this method is known to never throw because the success variant
-  /// cannot possibly be instantiated.
+  /// Unlike [Result.unwrapErr()], this method is known to never throw because
+  /// the success variant cannot possibly be instantiated.
   ///
   /// ```
   /// print(Err(2).error); // "2"
@@ -300,11 +305,12 @@ extension ErrResult<E> on Result<Never, E> {
 
 /// An extension on [Result] containing an [Option].
 extension ResultingOption<T, E> on Result<Option<T>, E> {
-  /// Transposes a [Result] containing an [Option] into an [Option] containing a [Result].
+  /// Transposes a [Result] containing an [Option] into an [Option] containing a
+  /// [Result].
   ///
-  /// An [Ok] with a [None] value will be mapped to a [None], and an [Ok] with a [Some] value will
-  /// be mapped to a [Some] with an [Ok] value. An [Err] will be mapped to a [Some] with an [Err]
-  /// value.
+  /// An [Ok] with a [None] value will be mapped to a [None], and an [Ok] with a
+  /// [Some] value will be mapped to a [Some] with an [Ok] value. An [Err] will
+  /// be mapped to a [Some] with an [Err] value.
   ///
   /// ```
   /// print(Ok(Some(2)).transpose()); // "Some(Ok(2))"
@@ -378,11 +384,15 @@ class Ok<T, E> extends Result<T, E> {
       return ifOk(value);
     }
 
-    throw StateError('${msg ?? 'called `Result.unwrapErr()` on an `Ok`'}: $value');
+    throw StateError(
+      '${msg ?? 'called `Result.unwrapErr()` on an `Ok`'}: $value',
+    );
   }
 
   @override
-  Result<U, E> map<U>(U Function(T value) map, {U Function(E error)? ifErr}) => Ok(map(value));
+  Result<U, E> map<U>(U Function(T value) map, {U Function(E error)? ifErr}) {
+    return Ok(map(value));
+  }
 
   @override
   Result<T, F> mapErr<F>(F Function(E error) map, {F Function(T value)? ifOk}) {
@@ -396,7 +406,9 @@ class Ok<T, E> extends Result<T, E> {
   Result<T, F> or<F>(Result<T, F> Function(E error) other) => Ok(value);
 
   @override
-  String toString([bool typeInfo = false]) => 'Ok${typeInfo ? '<$T, $E>' : ''}($value)';
+  String toString([bool typeInfo = false]) {
+    return 'Ok${typeInfo ? '<$T, $E>' : ''}($value)';
+  }
 }
 
 /// An erroneous [Result].
@@ -443,7 +455,9 @@ class Err<T, E> extends Result<T, E> {
       return ifErr(error);
     }
 
-    throw StateError('${msg ?? 'called `Result.unwrap()` on an `Err`'}: $error');
+    throw StateError(
+      '${msg ?? 'called `Result.unwrap()` on an `Err`'}: $error',
+    );
   }
 
   @override
@@ -455,7 +469,9 @@ class Err<T, E> extends Result<T, E> {
   }
 
   @override
-  Result<T, F> mapErr<F>(F Function(E error) map, {F Function(T value)? ifOk}) => Err(map(error));
+  Result<T, F> mapErr<F>(F Function(E error) map, {F Function(T value)? ifOk}) {
+    return Err(map(error));
+  }
 
   @override
   Result<U, E> and<U>(Result<U, E> Function(T value) other) => Err(error);
@@ -464,5 +480,7 @@ class Err<T, E> extends Result<T, E> {
   Result<T, F> or<F>(Result<T, F> Function(E error) other) => other(error);
 
   @override
-  String toString([bool typeInfo = false]) => 'Err${typeInfo ? '<$T, $E>' : ''}($error)';
+  String toString([bool typeInfo = false]) {
+    return 'Err${typeInfo ? '<$T, $E>' : ''}($error)';
+  }
 }

@@ -11,8 +11,13 @@ void main() {
         expect(Option<int>(null), equals(const None<int>()));
       });
 
-      test('some', () => expect(const Option.some(2), equals(const Some(2))));
-      test('none', () => expect(const Option<int>.none(), equals(const None<int>())));
+      test('some', () {
+        expect(const Option.some(2), equals(const Some(2)));
+      });
+
+      test('none', () {
+        expect(const Option<int>.none(), equals(const None<int>()));
+      });
     });
 
     group('operators', () {
@@ -26,7 +31,10 @@ void main() {
   group('Some', () {
     group('properties', () {
       test('value', () => expect(const Some(2).value, equals(2)));
-      test('iterable', () => expect(const Some(2).iterable.toList(), equals([2])));
+
+      test('iterable', () {
+        expect(const Some(2).iterable.toList(), equals([2]));
+      });
 
       test('isSome', () => expect(const Some(2).isSome, isTrue));
       test('isNone', () => expect(const Some(2).isNone, isFalse));
@@ -64,7 +72,10 @@ void main() {
       });
 
       test('match', () {
-        expect(const Some(2).match((value) => 'some: $value', () => 'none'), equals('some: 2'));
+        expect(
+          const Some(2).match((value) => 'some: $value', () => 'none'),
+          equals('some: 2'),
+        );
       });
 
       test('unwrap', () {
@@ -86,12 +97,19 @@ void main() {
 
         expect(
           () => const Some(2).unwrapNone(msg: 'custom'),
-          throwsA(predicate<Object>((err) => err is StateError && err.message == 'custom: 2')),
+          throwsA(
+            predicate<Object>((err) {
+              return err is StateError && err.message == 'custom: 2';
+            }),
+          ),
         );
       });
 
       test('map', () {
-        expect(const Some(2).map((value) => value.toString()), equals(const Some('2')));
+        expect(
+          const Some(2).map((value) => value.toString()),
+          equals(const Some('2')),
+        );
 
         expect(
           const Some(2).map((value) => value.toString(), ifNone: () => 'none'),
@@ -100,27 +118,58 @@ void main() {
       });
 
       test('okOr', () {
-        expect(const Some(2).okOr(() => 'none'), equals(const Ok<int, String>(2)));
+        expect(
+          const Some(2).okOr(() => 'none'),
+          equals(const Ok<int, String>(2)),
+        );
       });
 
       test('and', () {
-        expect(const Some(2).and((value) => Some(value.toString())), equals(const Some('2')));
-        expect(const Some(2).and((value) => const None<String>()), equals(const None<String>()));
+        expect(
+          const Some(2).and((value) => Some(value.toString())),
+          equals(const Some('2')),
+        );
+
+        expect(
+          const Some(2).and((value) => const None<String>()),
+          equals(const None<String>()),
+        );
       });
 
       test('or', () {
-        expect(const Some(2).or(() => const Some(3)), equals(const Some(2)));
-        expect(const Some(2).or(() => const None<int>()), equals(const Some(2)));
+        expect(
+          const Some(2).or(() => const Some(3)),
+          equals(const Some(2)),
+        );
+
+        expect(
+          const Some(2).or(() => const None<int>()),
+          equals(const Some(2)),
+        );
       });
 
       test('xor', () {
-        expect(const Some(2).xor(const Some(3)), equals(const None<int>()));
-        expect(const Some(2).xor(const None<int>()), equals(const Some(2)));
+        expect(
+          const Some(2).xor(const Some(3)),
+          equals(const None<int>()),
+        );
+
+        expect(
+          const Some(2).xor(const None<int>()),
+          equals(const Some(2)),
+        );
       });
 
       test('where', () {
-        expect(const Some(2).where((value) => value == 2), equals(const Some(2)));
-        expect(const Some(2).where((value) => value == 3), equals(const None<int>()));
+        expect(
+          const Some(2).where((value) => value == 2),
+          equals(const Some(2)),
+        );
+
+        expect(
+          const Some(2).where((value) => value == 3),
+          equals(const None<int>()),
+        );
       });
 
       test('whereType', () {
@@ -142,12 +191,18 @@ void main() {
 
       test('zipWith', () {
         expect(
-          const Some(2).zipWith<bool, String>((value) => Some(value == 2), (a, b) => '$a:$b'),
+          const Some(2).zipWith<bool, String>(
+            (value) => Some(value == 2),
+            (a, b) => '$a:$b',
+          ),
           equals(const Some('2:true')),
         );
 
         expect(
-          const Some(2).zipWith<bool, String>((value) => const None<bool>(), (a, b) => '$a:$b'),
+          const Some(2).zipWith<bool, String>(
+            (value) => const None<bool>(),
+            (a, b) => '$a:$b',
+          ),
           equals(const None<String>()),
         );
       });
@@ -192,7 +247,10 @@ void main() {
       });
 
       test('match', () {
-        expect(const None<int>().match((value) => 'some: $value', () => 'none'), equals('none'));
+        expect(
+          const None<int>().match((value) => 'some: $value', () => 'none'),
+          equals('none'),
+        );
       });
 
       test('unwrap', () {
@@ -200,35 +258,56 @@ void main() {
           () => const None<int>().unwrap(),
           throwsA(
             predicate<Object>((err) {
-              return err is StateError && err.message == 'called `Option.unwrap()` on a `None`';
+              return err is StateError &&
+                  err.message == 'called `Option.unwrap()` on a `None`';
             }),
           ),
         );
 
         expect(
           () => const None<int>().unwrap(msg: 'custom'),
-          throwsA(predicate<Object>((err) => err is StateError && err.message == 'custom')),
+          throwsA(
+            predicate<Object>((err) {
+              return err is StateError && err.message == 'custom';
+            }),
+          ),
         );
 
         expect(const None<int>().unwrap(ifNone: () => 3), equals(3));
       });
 
       test('unwrapNone', () {
-        expect(() => const None<int>().unwrapNone(), isNot(throwsStateError));
-        expect(() => const None<int>().unwrapNone(msg: 'custom'), isNot(throwsStateError));
+        expect(
+          () => const None<int>().unwrapNone(),
+          isNot(throwsStateError),
+        );
+
+        expect(
+          () => const None<int>().unwrapNone(msg: 'custom'),
+          isNot(throwsStateError),
+        );
       });
 
       test('map', () {
-        expect(const None<int>().map((value) => value.toString()), equals(const None<String>()));
+        expect(
+          const None<int>().map((value) => value.toString()),
+          equals(const None<String>()),
+        );
 
         expect(
-          const None<int>().map((value) => value.toString(), ifNone: () => 'none'),
+          const None<int>().map(
+            (value) => value.toString(),
+            ifNone: () => 'none',
+          ),
           equals(const Some('none')),
         );
       });
 
       test('okOr', () {
-        expect(const None<int>().okOr(() => 'none'), equals(const Err<int, String>('none')));
+        expect(
+          const None<int>().okOr(() => 'none'),
+          equals(const Err<int, String>('none')),
+        );
       });
 
       test('and', () {
@@ -244,18 +323,39 @@ void main() {
       });
 
       test('or', () {
-        expect(const None<int>().or(() => const Some(3)), equals(const Some(3)));
-        expect(const None<int>().or(() => const None<int>()), equals(const None<int>()));
+        expect(
+          const None<int>().or(() => const Some(3)),
+          equals(const Some(3)),
+        );
+
+        expect(
+          const None<int>().or(() => const None<int>()),
+          equals(const None<int>()),
+        );
       });
 
       test('xor', () {
-        expect(const None<int>().xor(const Some(3)), equals(const Some(3)));
-        expect(const None<int>().xor(const None<int>()), equals(const None<int>()));
+        expect(
+          const None<int>().xor(const Some(3)),
+          equals(const Some(3)),
+        );
+
+        expect(
+          const None<int>().xor(const None<int>()),
+          equals(const None<int>()),
+        );
       });
 
       test('where', () {
-        expect(const None<int>().where((value) => value == 2), equals(const None<int>()));
-        expect(const None<int>().where((value) => value == 3), equals(const None<int>()));
+        expect(
+          const None<int>().where((value) => value == 2),
+          equals(const None<int>()),
+        );
+
+        expect(
+          const None<int>().where((value) => value == 3),
+          equals(const None<int>()),
+        );
       });
 
       test('whereType', () {
@@ -277,12 +377,18 @@ void main() {
 
       test('zipWith', () {
         expect(
-          const None<int>().zipWith<bool, String>((value) => Some(value == 2), (a, b) => '$a:$b'),
+          const None<int>().zipWith<bool, String>(
+            (value) => Some(value == 2),
+            (a, b) => '$a:$b',
+          ),
           equals(const None<String>()),
         );
 
         expect(
-          const None<int>().zipWith<bool, String>((value) => const None<bool>(), (a, b) => '$a:$b'),
+          const None<int>().zipWith<bool, String>(
+            (value) => const None<bool>(),
+            (a, b) => '$a:$b',
+          ),
           equals(const None<String>()),
         );
       });
@@ -327,8 +433,15 @@ void main() {
   group('OptionalOption', () {
     group('methods', () {
       test('flatten', () {
-        expect(const Some(Some(2)).flatten(), equals(const Some(2)));
-        expect(const Some<None<int>>(None()).flatten(), equals(const None<int>()));
+        expect(
+          const Some(Some(2)).flatten(),
+          equals(const Some(2)),
+        );
+
+        expect(
+          const Some<None<int>>(None()).flatten(),
+          equals(const None<int>()),
+        );
 
         expect(const None<Some<int>>().flatten(), equals(const None<int>()));
         expect(const None<None<int>>().flatten(), equals(const None<int>()));

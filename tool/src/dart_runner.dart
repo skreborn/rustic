@@ -21,8 +21,15 @@ abstract class DartCommand {
 
     final output = <String>[];
 
-    process.stdout.transform(utf8.decoder).transform(const LineSplitter()).listen(output.add);
-    process.stderr.transform(utf8.decoder).transform(const LineSplitter()).listen(output.add);
+    process.stdout
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())
+        .listen(output.add);
+
+    process.stderr
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())
+        .listen(output.add);
 
     return DartCommandResult(await process.exitCode, output);
   }
@@ -53,7 +60,7 @@ class DartFormatCommand extends DartCommand {
   String get command => 'format';
 
   @override
-  List<String> get args => const ['--fix', '--line-length=100'];
+  List<String> get args => const ['--fix'];
 
   const DartFormatCommand(String targetPath) : super._(targetPath);
 }
