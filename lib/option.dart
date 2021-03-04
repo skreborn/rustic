@@ -99,8 +99,8 @@ abstract class Option<T> extends Equatable {
   /// Executes [fn] if `this` is a [None].
   ///
   /// ```
-  /// Some(2).whenNone((_) => print('none')); // Outputs nothing
-  /// None(2).whenNone((_) => print('none')); // "none"
+  /// Some(2).whenNone(() => print('none')); // Outputs nothing
+  /// None(2).whenNone(() => print('none')); // "none"
   /// ```
   void whenNone(void Function() fn);
 
