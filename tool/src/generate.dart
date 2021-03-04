@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'dart_runner.dart';
 
-void generate(String path, List<String> lines) async {
+void generate(String path, List<String?> lines) async {
   final file = File('lib/$path.dart');
 
   final contents = [

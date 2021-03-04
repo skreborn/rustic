@@ -29,7 +29,7 @@ abstract class Option<T> extends Equatable {
   /// print(Option(2)); // "Some(2)"
   /// print(Option(null)); // "None"
   /// ```
-  factory Option(T value) => value != null ? Some(value) : None<T>();
+  factory Option(T? value) => value != null ? Some(value) : None<T>();
 
   /// Creates a [Some] with the given [value].
   ///
@@ -77,7 +77,7 @@ abstract class Option<T> extends Equatable {
   /// print(Some(2).asPlain()); // "2"
   /// print(None().asPlain()); // "null"
   /// ```
-  T asPlain();
+  T? asPlain();
 
   /// Returns `true` if `this` is a [Some] with the given [value].
   ///
@@ -226,7 +226,7 @@ abstract class Option<T> extends Equatable {
 }
 
 /// An extension on any nullable object.
-extension Optionable<T> on T {
+extension Optionable<T> on T? {
   /// Creates a [Some] with `this` as its value, if it is not `null`, or a [None] otherwise.
   ///
   /// ```
@@ -284,12 +284,10 @@ class Some<T> extends Option<T> {
   /// ```
   /// print(Some(2)); // "Some(2)"
   /// ```
-  const Some(this.value)
-      : assert(value != null, '`value` must not be `null`'),
-        super._();
+  const Some(this.value) : super._();
 
   @override
-  List<Object> get props => [value];
+  List<T> get props => [value];
 
   @override
   Iterable<T> get iterable => Iterable<T>.generate(1, (index) => value);
@@ -307,15 +305,15 @@ class Some<T> extends Option<T> {
   U match<U>(U Function(T value) fSome, U Function() fNone) => fSome(value);
 
   @override
-  T unwrap({String msg, T Function() ifNone}) => value;
+  T unwrap({String? msg, T Function()? ifNone}) => value;
 
   @override
-  void unwrapNone({String msg}) {
+  void unwrapNone({String? msg}) {
     throw StateError('${msg ?? 'called `Option.unwrapNone()` on a `Some`'}: $value');
   }
 
   @override
-  Some<U> map<U>(U Function(T value) map, {U Function() ifNone}) => Some(map(value));
+  Some<U> map<U>(U Function(T value) map, {U Function()? ifNone}) => Some(map(value));
 
   @override
   Result<T, E> okOr<E>(E Function() ifNone) => Ok(value);
@@ -366,13 +364,13 @@ class None<T> extends Option<T> {
   const None() : super._();
 
   @override
-  List<Object> get props => [];
+  List<Never> get props => [];
 
   @override
   Iterable<T> get iterable => Iterable<T>.empty();
 
   @override
-  T asPlain() => null;
+  Null asPlain() => null;
 
   @override
   void whenSome(void Function(T value) fn) {}
@@ -384,7 +382,7 @@ class None<T> extends Option<T> {
   U match<U>(U Function(T value) fSome, U Function() fNone) => fNone();
 
   @override
-  T unwrap({String msg, T Function() ifNone}) {
+  T unwrap({String? msg, T Function()? ifNone}) {
     if (ifNone != null) {
       return ifNone();
     }
@@ -393,10 +391,10 @@ class None<T> extends Option<T> {
   }
 
   @override
-  void unwrapNone({String msg}) {}
+  void unwrapNone({String? msg}) {}
 
   @override
-  Option<U> map<U>(U Function(T value) map, {U Function() ifNone}) {
+  Option<U> map<U>(U Function(T value) map, {U Function()? ifNone}) {
     return ifNone != null ? Some(ifNone()) : None<U>();
   }
 

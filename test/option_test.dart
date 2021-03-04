@@ -24,17 +24,6 @@ void main() {
   });
 
   group('Some', () {
-    test('constructor', () {
-      expect(
-        () => Some<int>(null),
-        throwsA(
-          predicate<Object>((error) {
-            return error is AssertionError && error.message == '`value` must not be `null`';
-          }),
-        ),
-      );
-    });
-
     group('properties', () {
       test('value', () => expect(const Some(2).value, equals(2)));
       test('iterable', () => expect(const Some(2).iterable.toList(), equals([2])));

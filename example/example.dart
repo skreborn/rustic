@@ -9,7 +9,7 @@ Option<int> multiply(String a, String b) {
 }
 
 Result<int, String> tryParse(String source) {
-  return Ok<int, String>(int.tryParse(source)).and((value) {
+  return Ok<int?, String>(int.tryParse(source)).and((value) {
     return value == null ? Err('not a number: $source') : Ok(value);
   });
 }

@@ -22,7 +22,7 @@ class _CheckException<T, E> implements Exception {
 ///
 /// ```
 /// Result<int, String> tryParse(String source) {
-///   return Ok<int, String>(int.tryParse(source)).and((value) {
+///   return Ok<int?, String>(int.tryParse(source)).and((value) {
 ///     return value == null ? Err('not a number: $source') : Ok(value);
 ///   });
 /// }
@@ -346,12 +346,10 @@ class Ok<T, E> extends Result<T, E> {
   /// ```
   /// print(Ok(2)); // "Ok(2)"
   /// ```
-  const Ok(this.value)
-      : assert(value != null, '`value` must not be `null`'),
-        super._();
+  const Ok(this.value) : super._();
 
   @override
-  List<Object> get props => [value];
+  List<T> get props => [value];
 
   @override
   Iterable<T> get iterable => Iterable<T>.generate(1, (index) => value);
@@ -372,10 +370,10 @@ class Ok<T, E> extends Result<T, E> {
   None<E> get err => None<E>();
 
   @override
-  T unwrap({String msg, T Function(E error) ifErr}) => value;
+  T unwrap({String? msg, T Function(E error)? ifErr}) => value;
 
   @override
-  E unwrapErr({String msg, E Function(T value) ifOk}) {
+  E unwrapErr({String? msg, E Function(T value)? ifOk}) {
     if (ifOk != null) {
       return ifOk(value);
     }
@@ -384,10 +382,10 @@ class Ok<T, E> extends Result<T, E> {
   }
 
   @override
-  Result<U, E> map<U>(U Function(T value) map, {U Function(E error) ifErr}) => Ok(map(value));
+  Result<U, E> map<U>(U Function(T value) map, {U Function(E error)? ifErr}) => Ok(map(value));
 
   @override
-  Result<T, F> mapErr<F>(F Function(E error) map, {F Function(T value) ifOk}) {
+  Result<T, F> mapErr<F>(F Function(E error) map, {F Function(T value)? ifOk}) {
     return ifOk != null ? Err(ifOk(value)) : Ok(value);
   }
 
@@ -416,12 +414,10 @@ class Err<T, E> extends Result<T, E> {
   /// ```
   /// print(Err(2)); // "Err(2)"
   /// ```
-  const Err(this.error)
-      : assert(error != null, '`error` must not be `null`'),
-        super._();
+  const Err(this.error) : super._();
 
   @override
-  List<Object> get props => [error];
+  List<E> get props => [error];
 
   @override
   Iterable<T> get iterable => Iterable<T>.empty();
@@ -442,7 +438,7 @@ class Err<T, E> extends Result<T, E> {
   Option<E> get err => Some(error);
 
   @override
-  T unwrap({String msg, T Function(E error) ifErr}) {
+  T unwrap({String? msg, T Function(E error)? ifErr}) {
     if (ifErr != null) {
       return ifErr(error);
     }
@@ -451,15 +447,15 @@ class Err<T, E> extends Result<T, E> {
   }
 
   @override
-  E unwrapErr({String msg, E Function(T value) ifOk}) => error;
+  E unwrapErr({String? msg, E Function(T value)? ifOk}) => error;
 
   @override
-  Result<U, E> map<U>(U Function(T value) map, {U Function(E error) ifErr}) {
+  Result<U, E> map<U>(U Function(T value) map, {U Function(E error)? ifErr}) {
     return ifErr != null ? Ok(ifErr(error)) : Err(error);
   }
 
   @override
-  Result<T, F> mapErr<F>(F Function(E error) map, {F Function(T value) ifOk}) => Err(map(error));
+  Result<T, F> mapErr<F>(F Function(E error) map, {F Function(T value)? ifOk}) => Err(map(error));
 
   @override
   Result<U, E> and<U>(Result<U, E> Function(T value) other) => Err(error);

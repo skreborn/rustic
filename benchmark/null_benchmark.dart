@@ -11,10 +11,18 @@ class _NullBenchmark extends BenchmarkBase {
     }
   }
 
-  int _multiply(String a, String b) {
+  int? _multiply(String a, String b) {
     final aParsed = int.tryParse(a);
 
-    return aParsed != null ? aParsed * int.tryParse(b) : null;
+    if (aParsed != null) {
+      final bParsed = int.tryParse(b);
+
+      if (bParsed != null) {
+        return aParsed * bParsed;
+      }
+    }
+
+    return null;
   }
 }
 

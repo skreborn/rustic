@@ -1,5 +1,6 @@
 import 'package:rustic/option.dart';
 import 'package:rustic/result.dart';
+import 'package:rustic/tuple.dart';
 import 'package:test/test.dart';
 
 class _EmptyException implements Exception {
@@ -74,17 +75,6 @@ void main() {
   });
 
   group('Ok', () {
-    test('constructor', () {
-      expect(
-        () => Ok<int, String>(null),
-        throwsA(
-          predicate<Object>((error) {
-            return error is AssertionError && error.message == '`value` must not be `null`';
-          }),
-        ),
-      );
-    });
-
     group('properties', () {
       test('value', () => expect(const Ok<int, String>(2).value, equals(2)));
       test('iterable', () => expect(const Ok<int, String>(2).iterable.toList(), equals([2])));
@@ -112,19 +102,19 @@ void main() {
       test('containsErr', () => expect(const Ok<int, String>(2).containsErr('2'), isFalse));
 
       test('whenOk', () {
-        int okValue;
+        var pair = const Tuple2<int?, String?>(null, null);
 
-        const Ok<int, String>(2).whenOk((value) => okValue = value);
+        const Ok<int, String>(2).whenOk((value) => pair = Tuple2(value, null));
 
-        expect(okValue, equals(2));
+        expect(pair, equals(const Tuple2<int?, String?>(2, null)));
       });
 
       test('whenErr', () {
-        String okValue;
+        var pair = const Tuple2<int?, String?>(null, null);
 
-        const Ok<int, String>(2).whenErr((value) => okValue = value);
+        const Ok<int, String>(2).whenErr((err) => pair = Tuple2(null, err));
 
-        expect(okValue, isNull);
+        expect(pair, equals(const Tuple2<int?, String?>(null, null)));
       });
 
       test('match', () {
@@ -202,17 +192,6 @@ void main() {
   });
 
   group('Err', () {
-    test('constructor', () {
-      expect(
-        () => Err<int, String>(null),
-        throwsA(
-          predicate<Object>((error) {
-            return error is AssertionError && error.message == '`error` must not be `null`';
-          }),
-        ),
-      );
-    });
-
     group('properties', () {
       test('error', () => expect(const Err<int, String>('2').error, equals('2')));
       test('iterable', () => expect(const Err<int, String>('2').iterable, isEmpty));
@@ -240,19 +219,19 @@ void main() {
       });
 
       test('whenOk', () {
-        int errValue;
+        var pair = const Tuple2<int?, String?>(null, null);
 
-        const Err<int, String>('2').whenOk((value) => errValue = value);
+        const Err<int, String>('2').whenOk((value) => pair = Tuple2(value, null));
 
-        expect(errValue, isNull);
+        expect(pair, equals(const Tuple2<int?, String?>(null, null)));
       });
 
       test('whenErr', () {
-        String errValue;
+        var pair = const Tuple2<int?, String?>(null, null);
 
-        const Err<int, String>('2').whenErr((value) => errValue = value);
+        const Err<int, String>('2').whenErr((err) => pair = Tuple2(null, err));
 
-        expect(errValue, equals('2'));
+        expect(pair, equals(const Tuple2<int?, String?>(null, '2')));
       });
 
       test('match', () {

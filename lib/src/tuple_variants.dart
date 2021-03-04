@@ -24,7 +24,7 @@ class Tuple2<I0, I1> extends Tuple {
   final I1 i1;
 
   @override
-  List<Object> get props => [i0, i1];
+  List<Object?> get props => [i0, i1];
 
   /// Creates a [Tuple] of 2 items.
   ///
@@ -70,7 +70,7 @@ class Tuple3<I0, I1, I2> extends Tuple {
   final I2 i2;
 
   @override
-  List<Object> get props => [i0, i1, i2];
+  List<Object?> get props => [i0, i1, i2];
 
   /// Creates a [Tuple] of 3 items.
   ///
@@ -126,7 +126,7 @@ class Tuple4<I0, I1, I2, I3> extends Tuple {
   final I3 i3;
 
   @override
-  List<Object> get props => [i0, i1, i2, i3];
+  List<Object?> get props => [i0, i1, i2, i3];
 
   /// Creates a [Tuple] of 4 items.
   ///
@@ -192,7 +192,7 @@ class Tuple5<I0, I1, I2, I3, I4> extends Tuple {
   final I4 i4;
 
   @override
-  List<Object> get props => [i0, i1, i2, i3, i4];
+  List<Object?> get props => [i0, i1, i2, i3, i4];
 
   /// Creates a [Tuple] of 5 items.
   ///
@@ -268,7 +268,7 @@ class Tuple6<I0, I1, I2, I3, I4, I5> extends Tuple {
   final I5 i5;
 
   @override
-  List<Object> get props => [i0, i1, i2, i3, i4, i5];
+  List<Object?> get props => [i0, i1, i2, i3, i4, i5];
 
   /// Creates a [Tuple] of 6 items.
   ///
@@ -354,7 +354,7 @@ class Tuple7<I0, I1, I2, I3, I4, I5, I6> extends Tuple {
   final I6 i6;
 
   @override
-  List<Object> get props => [i0, i1, i2, i3, i4, i5, i6];
+  List<Object?> get props => [i0, i1, i2, i3, i4, i5, i6];
 
   /// Creates a [Tuple] of 7 items.
   ///
@@ -450,7 +450,7 @@ class Tuple8<I0, I1, I2, I3, I4, I5, I6, I7> extends Tuple {
   final I7 i7;
 
   @override
-  List<Object> get props => [i0, i1, i2, i3, i4, i5, i6, i7];
+  List<Object?> get props => [i0, i1, i2, i3, i4, i5, i6, i7];
 
   /// Creates a [Tuple] of 8 items.
   ///
@@ -556,7 +556,7 @@ class Tuple9<I0, I1, I2, I3, I4, I5, I6, I7, I8> extends Tuple {
   final I8 i8;
 
   @override
-  List<Object> get props => [i0, i1, i2, i3, i4, i5, i6, i7, i8];
+  List<Object?> get props => [i0, i1, i2, i3, i4, i5, i6, i7, i8];
 
   /// Creates a [Tuple] of 9 items.
   ///
@@ -672,7 +672,7 @@ class Tuple10<I0, I1, I2, I3, I4, I5, I6, I7, I8, I9> extends Tuple {
   final I9 i9;
 
   @override
-  List<Object> get props => [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9];
+  List<Object?> get props => [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9];
 
   /// Creates a [Tuple] of 10 items.
   ///
@@ -798,7 +798,7 @@ class Tuple11<I0, I1, I2, I3, I4, I5, I6, I7, I8, I9, I10> extends Tuple {
   final I10 i10;
 
   @override
-  List<Object> get props => [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10];
+  List<Object?> get props => [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10];
 
   /// Creates a [Tuple] of 11 items.
   ///
@@ -934,7 +934,7 @@ class Tuple12<I0, I1, I2, I3, I4, I5, I6, I7, I8, I9, I10, I11> extends Tuple {
   final I11 i11;
 
   @override
-  List<Object> get props => [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11];
+  List<Object?> get props => [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11];
 
   /// Creates a [Tuple] of 12 items.
   ///
@@ -1080,7 +1080,7 @@ class Tuple13<I0, I1, I2, I3, I4, I5, I6, I7, I8, I9, I10, I11, I12> extends Tup
   final I12 i12;
 
   @override
-  List<Object> get props => [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12];
+  List<Object?> get props => [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12];
 
   /// Creates a [Tuple] of 13 items.
   ///
@@ -1236,7 +1236,7 @@ class Tuple14<I0, I1, I2, I3, I4, I5, I6, I7, I8, I9, I10, I11, I12, I13> extend
   final I13 i13;
 
   @override
-  List<Object> get props => [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12, i13];
+  List<Object?> get props => [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12, i13];
 
   /// Creates a [Tuple] of 14 items.
   ///
@@ -1402,7 +1402,7 @@ class Tuple15<I0, I1, I2, I3, I4, I5, I6, I7, I8, I9, I10, I11, I12, I13, I14> e
   final I14 i14;
 
   @override
-  List<Object> get props => [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12, i13, i14];
+  List<Object?> get props => [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12, i13, i14];
 
   /// Creates a [Tuple] of 15 items.
   ///
@@ -1578,7 +1578,7 @@ class Tuple16<I0, I1, I2, I3, I4, I5, I6, I7, I8, I9, I10, I11, I12, I13, I14, I
   final I15 i15;
 
   @override
-  List<Object> get props => [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12, i13, i14, i15];
+  List<Object?> get props => [i0, i1, i2, i3, i4, i5, i6, i7, i8, i9, i10, i11, i12, i13, i14, i15];
 
   /// Creates a [Tuple] of 16 items.
   ///

@@ -4,7 +4,7 @@ const _minItems = 2;
 const _maxItems = 16;
 
 void main() async {
-  List<String> minMax(List<String> Function(int n) generate) {
+  List<String?> minMax(List<String?> Function(int n) generate) {
     return [for (var n = _minItems; n <= _maxItems; ++n) ...generate(n)];
   }
 
@@ -43,7 +43,7 @@ String _variant(int n) {
       $fields
 
       @override
-      List<Object> get props => [$props];
+      List<Object?> get props => [$props];
 
       /// Creates a [Tuple] of $n items.
       ///

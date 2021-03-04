@@ -4,12 +4,12 @@ version: 0.1.1
 repository: https://github.com/skreborn/rustic
 
 environment:
-  sdk: '>=2.9.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
-  equatable: ^1.0.0
-  meta: ^1.2.0
+  equatable: ^2.0.0
+  meta: ^1.0.0
 
 dev_dependencies:
-  benchmark_harness: ^1.0.0
-  test: ^1.15.0
+  benchmark_harness: ^2.0.0
+  test: ^1.0.0
