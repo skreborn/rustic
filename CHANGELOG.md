@@ -1,3 +1,7 @@
+## 0.3.0
+
+- **change**: reduce maximum tuple item count to 8
+
 ## 0.2.0
 
 - **feat**: migrate to null-safety
