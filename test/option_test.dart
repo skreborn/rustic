@@ -47,6 +47,22 @@ void main() {
         expect(const Some(2).contains(3), isFalse);
       });
 
+      test('whenSome', () {
+        var pair = const Tuple2<int?, bool>(null, false);
+
+        const Some(2).whenSome((value) => pair = Tuple2(value, false));
+
+        expect(pair, equals(const Tuple2<int?, bool>(2, false)));
+      });
+
+      test('whenNone', () {
+        var pair = const Tuple2<int?, bool>(null, false);
+
+        const Some(2).whenNone(() => pair = const Tuple2(null, true));
+
+        expect(pair, equals(const Tuple2<int?, bool>(null, false)));
+      });
+
       test('match', () {
         expect(const Some(2).match((value) => 'some: $value', () => 'none'), equals('some: 2'));
       });
@@ -158,6 +174,22 @@ void main() {
     group('methods', () {
       test('asPlain', () => expect(const None<int>().asPlain(), isNull));
       test('contains', () => expect(const None<int>().contains(2), isFalse));
+
+      test('whenSome', () {
+        var pair = const Tuple2<int?, bool>(null, false);
+
+        const None<int>().whenSome((value) => pair = Tuple2(value, false));
+
+        expect(pair, equals(const Tuple2<int?, bool>(null, false)));
+      });
+
+      test('whenNone', () {
+        var pair = const Tuple2<int?, bool>(null, false);
+
+        const None<int>().whenNone(() => pair = const Tuple2(null, true));
+
+        expect(pair, equals(const Tuple2<int?, bool>(null, true)));
+      });
 
       test('match', () {
         expect(const None<int>().match((value) => 'some: $value', () => 'none'), equals('none'));
