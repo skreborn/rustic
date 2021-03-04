@@ -1,7 +1,7 @@
 import 'src/generate.dart';
 
 const _minItems = 2;
-const _maxItems = 16;
+const _maxItems = 8;
 
 void main() async {
   List<String?> minMax(List<String?> Function(int n) generate) {
