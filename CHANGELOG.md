@@ -1,3 +1,7 @@
+## 0.2.0
+
+- **feat**: migrate to null-safety
+
 ## 0.1.1
 
 - **feat**: implement unit type
