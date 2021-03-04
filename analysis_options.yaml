@@ -1,6 +1,4 @@
 analyzer:
-  exclude:
-    - example/**
   strong-mode:
     implicit-casts: false
     implicit-dynamic: false
@@ -25,7 +23,6 @@ linter:
     - avoid_function_literals_in_foreach_calls
     - avoid_implementing_value_types
     - avoid_positional_boolean_parameters
-    - avoid_print
     - avoid_private_typedef_functions
     - avoid_redundant_argument_values
     - avoid_relative_lib_imports
@@ -111,7 +108,6 @@ linter:
     - prefer_single_quotes
     - prefer_spread_collections
     - prefer_typing_uninitialized_variables
-    - prefer_void_to_null
     - provide_deprecation_message
     - public_member_api_docs
     - recursive_getters

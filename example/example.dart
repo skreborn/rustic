@@ -25,5 +25,5 @@ void main() {
   print(tryParse('2')); // "Ok(2)"
   print(tryParse('two')); // "Err(not a number: two)"
 
-  print(sum2(Tuple2(2, 3), Tuple2(4, 5))); // "(6, 8)"
+  print(sum2(const Tuple2(2, 3), const Tuple2(4, 5))); // "(6, 8)"
 }
