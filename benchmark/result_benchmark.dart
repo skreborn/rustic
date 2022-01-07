@@ -13,7 +13,7 @@ class _ResultBenchmark extends BenchmarkBase {
   }
 
   Result<int, String> _tryParse(String source) {
-    return Ok<int?, String>(int.tryParse(source)).and((value) {
+    return Ok<int?, String>(int.tryParse(source)).andSync((value) {
       return value == null ? Err('not a number: $source') : Ok(value);
     });
   }

@@ -13,8 +13,8 @@ class _OptionBenchmark extends BenchmarkBase {
   }
 
   Option<int> _multiply(String a, String b) {
-    return int.tryParse(a).asOption().and((a) {
-      return int.tryParse(b).asOption().map((b) => a * b);
+    return int.tryParse(a).asOption().andSync((a) {
+      return int.tryParse(b).asOption().mapSync((b) => a * b);
     });
   }
 }
