@@ -1,3 +1,7 @@
+## 0.4.0
+
+- **feat**: introduce async variants of functions where applicable
+
 ## 0.3.0
 
 - **change**: reduce maximum tuple item count to 8
