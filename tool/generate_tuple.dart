@@ -27,7 +27,9 @@ String _variant(int n) {
     return '''
       /// Item $i.
       ///
-      /// ```
+      /// # Examples
+      ///
+      /// ```dart
       /// final tuple = Tuple$n($values);
       ///
       /// print(tuple.$i); // "$i"
@@ -47,7 +49,9 @@ String _variant(int n) {
 
       /// Creates a [Tuple] of $n items.
       ///
-      /// ```
+      /// # Examples
+      ///
+      /// ```dart
       /// final tuple = Tuple$n($values);
       ///
       /// print(tuple); // "($values)"

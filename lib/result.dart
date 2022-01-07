@@ -20,7 +20,13 @@ class _CheckException<T, E> implements Exception {
 ///
 /// A [Result] is either successful ([Ok]) or erroneous ([Err]).
 ///
-/// ```
+/// # Examples
+///
+/// The following function tries to parse an integer.
+/// Upon success, the resulting value is wrapped in an [Ok].
+/// If an error occurs during conversion, an [Err] is returned.
+///
+/// ```dart
 /// Result<int, String> tryParse(String source) {
 ///   return Ok<int?, String>(int.tryParse(source)).and((value) {
 ///     return value == null ? Err('not a number: $source') : Ok(value);
@@ -28,7 +34,10 @@ class _CheckException<T, E> implements Exception {
 /// }
 /// ```
 ///
-/// ```
+/// That function can now be used to try and parse an integer, and return with a
+/// helpful error in case of failure.
+///
+/// ```dart
 /// print(tryParse('2')); // "Ok(2)"
 /// print(tryParse('two')); // "Err(not a number: two)"
 /// ```
@@ -37,14 +46,18 @@ class _CheckException<T, E> implements Exception {
 abstract class Result<T, E> extends Equatable {
   /// Creates an [Ok] with the given [value].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Result.ok(2)); // "Ok(2)"
   /// ```
   const factory Result.ok(T value) = Ok<T, E>;
 
   /// Creates an [Err] with the given [error].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Result.err(2)); // "Err(2)"
   /// ```
   const factory Result.err(E error) = Err<T, E>;
@@ -54,7 +67,9 @@ abstract class Result<T, E> extends Equatable {
   /// [collector] provides a [Checker] that allows for an early return in case
   /// of a failure.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final collected = Result.collect<int, String>((check) {
   ///   String mapErr(int error) => error.toString();
   ///
@@ -88,7 +103,9 @@ abstract class Result<T, E> extends Equatable {
   /// [mapEx] optionally maps an [Exception] to an [Err]. Unhandled exceptions
   /// are rethrown unchanged.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final caught = Result.catchException<int, String>(() {
   ///   return int.parse('II');
   /// }, (ex) {
@@ -119,7 +136,9 @@ abstract class Result<T, E> extends Equatable {
 
   /// `true` if `this` is an [Ok].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Ok(2).isOk); // "true"
   /// print(Err(2).isOk); // "false"
   /// ```
@@ -127,7 +146,9 @@ abstract class Result<T, E> extends Equatable {
 
   /// True if `this` is an [Err].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Ok(2).isErr); // "false"
   /// print(Err(2).isErr); // "true"
   /// ```
@@ -135,7 +156,9 @@ abstract class Result<T, E> extends Equatable {
 
   /// Returns an iterable over the possibly contained value.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Ok(2).iterable.length); // "1"
   /// print(Err(2).iterable.length); // "0"
   /// ```
@@ -143,7 +166,9 @@ abstract class Result<T, E> extends Equatable {
 
   /// Returns `true` if `this` is an [Ok] with the given [value].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Ok(2).contains(2)); // "true"
   /// print(Ok(2).contains(3)); // "false"
   /// print(Err(2).contains(2)); // "false"
@@ -152,7 +177,9 @@ abstract class Result<T, E> extends Equatable {
 
   /// Returns `true` if `this` is an [Err] with the given [error].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Err(2).containsErr(2)); // "true"
   /// print(Err(2).containsErr(3)); // "false"
   /// print(Ok(2).containsErr(2)); // "false"
@@ -161,31 +188,60 @@ abstract class Result<T, E> extends Equatable {
 
   /// Executes [fn] if `this` is an [Ok].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// For an [Ok], [fn] is called with the contained value.
+  ///
+  /// ```dart
   /// Ok(2).whenOk((_) => print('ok')); // "ok"
+  /// ```
+  ///
+  /// For an [Err], [fn] is never called.
+  ///
+  /// ```dart
   /// Err(2).whenOk((_) => print('ok')); // Outputs nothing
   /// ```
   void whenOk(void Function(T value) fn);
 
   /// Executes [fn] if `this` is an [Err].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// For an [Ok], [fn] is never called.
+  ///
+  /// ```dart
   /// Ok(2).whenErr((_) => print('err')); // Outputs nothing
+  /// ```
+  ///
+  /// For an [Err], [fn] is called with the contained error.
+  ///
+  /// ```dart
   /// Err(2).whenErr((_) => print('err')); // "err"
   /// ```
   void whenErr(void Function(E error) fn);
 
   /// Applies mapping function [fOk] if `this` is an [Ok] and [fErr] otherwise.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// For an [Ok], [fOk] is called with the contained value.
+  ///
+  /// ```dart
   /// print(Ok(2).match((_) => 'ok', (_) => 'err')); // "ok"
+  /// ```
+  ///
+  /// For an [Err], [fErr] is called with the contained error.
+  ///
+  /// ```dart
   /// print(Err(2).match((_) => 'ok', (_) => 'err')); // "err"
   /// ```
   U match<U>(U Function(T value) fOk, U Function(E error) fErr);
 
   /// The possibly contained value.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Ok(2).ok); // "Some(2)"
   /// print(Err(2).ok); // "None"
   /// ```
@@ -193,7 +249,9 @@ abstract class Result<T, E> extends Equatable {
 
   /// The possibly contained error.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Ok(2).err); // "None"
   /// print(Err(2).err); // "Some(2)"
   /// ```
@@ -203,10 +261,14 @@ abstract class Result<T, E> extends Equatable {
   ///
   /// If `this` is an [Err], [ifErr] is called to compute a fallback value.
   ///
+  /// # Throws
+  ///
   /// Throws a [StateError] (with custom message [msg] if provided) if `this` is
   /// an [Err] and [ifErr] is `null`.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Ok(2).unwrap()); // "2"
   /// print(Err(2).unwrap()); // Throws a `StateError`
   /// ```
@@ -216,10 +278,14 @@ abstract class Result<T, E> extends Equatable {
   ///
   /// If `this` is an [Ok], [ifOk] is called to compute a fallback value.
   ///
+  /// # Throws
+  ///
   /// Throws a [StateError] (with custom message [msg] if provided) if `this` is
   /// an [Ok] and [ifOk] is `null`.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Ok(2).unwrapErr()); // Throws a `StateError`
   /// print(Err(2).unwrapErr()); // "2"
   /// ```
@@ -230,8 +296,17 @@ abstract class Result<T, E> extends Equatable {
   /// If `this` is an [Err], and [ifErr] is not `null`, it is called to compute
   /// a fallback value.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// For an [Ok], [map] is called with the contained value.
+  ///
+  /// ```dart
   /// print(Ok(2).map((_) => 'ok')); // "Ok(ok)"
+  /// ```
+  ///
+  /// For an [Err], [map] is never called.
+  ///
+  /// ```dart
   /// print(Err(2).map((_) => 'ok')); // "Err(2)"
   /// ```
   Result<U, E> map<U>(U Function(T value) map, {U Function(E error) ifErr});
@@ -241,17 +316,35 @@ abstract class Result<T, E> extends Equatable {
   /// If `this` is an [Ok], and [ifOk] is not `null`, it is called to compute a
   /// fallback value.
   ///
+  /// # Examples
+  ///
+  /// For an [Ok], [map] is never called.
+  ///
+  /// ```dart
+  /// print(Ok(2).mapErr((_) => 'err')); // "Ok(2)"
   /// ```
-  /// print(Ok(2).map((_) => 'err')); // "Ok(2)"
-  /// print(Err(2).map((_) => 'err')); // "Err('err')"
+  ///
+  /// For an [Err], [map] is called with the contained error.
+  ///
+  /// ```dart
+  /// print(Err(2).mapErr((_) => 'err')); // "Err('err')"
   /// ```
   Result<T, F> mapErr<F>(F Function(E error) map, {F Function(T value) ifOk});
 
   /// Returns the result of calling [other] if `this` is an [Ok], otherwise
   /// [Err].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// For an [Ok], [other] is called with the contained value.
+  ///
+  /// ```dart
   /// print(Ok(2).and((_) => Ok(3)); // "Ok(3)"
+  /// ```
+  ///
+  /// For an [Err], [other] is never called.
+  ///
+  /// ```dart
   /// print(Err(2).and((_) => Ok(3)); // "Err(2)"
   /// ```
   Result<U, E> and<U>(Result<U, E> Function(T value) other);
@@ -259,8 +352,17 @@ abstract class Result<T, E> extends Equatable {
   /// Returns [Ok] if `this` is an [Ok], otherwise the result of calling
   /// [other].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// For an [Ok], [other] is never called.
+  ///
+  /// ```dart
   /// print(Ok(2).or((_) => Ok(3)); // "Ok(2)"
+  /// ```
+  ///
+  /// For an [Err], [other] is called with the contained error.
+  ///
+  /// ```dart
   /// print(Err(2).or((_) => Ok(3)); // "Ok(3)"
   /// ```
   Result<T, F> or<F>(Result<T, F> Function(E error) other);
@@ -269,7 +371,9 @@ abstract class Result<T, E> extends Equatable {
   ///
   /// Type information is included if [typeInfo] is `true`.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Ok<int, String>(2).toString()); // "Ok(2)"
   /// print(Err<int, String>('2').toString(true)); // "Err<int, String>(2)"
   /// ```
@@ -284,7 +388,9 @@ extension OkResult<T> on Result<T, Never> {
   /// Unlike [Result.unwrap()], this method is known to never throw because the
   /// error variant cannot possibly be instantiated.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Ok(2).value); // "2"
   /// ```
   T get value => ok.unwrap();
@@ -297,7 +403,9 @@ extension ErrResult<E> on Result<Never, E> {
   /// Unlike [Result.unwrapErr()], this method is known to never throw because
   /// the success variant cannot possibly be instantiated.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Err(2).error); // "2"
   /// ```
   E get error => err.unwrap();
@@ -312,7 +420,9 @@ extension ResultingOption<T, E> on Result<Option<T>, E> {
   /// [Some] value will be mapped to a [Some] with an [Ok] value. An [Err] will
   /// be mapped to a [Some] with an [Err] value.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Ok(Some(2)).transpose()); // "Some(Ok(2))"
   /// print(Err(2).transpose()); // "Some(Err(2))"
   /// ```
@@ -330,7 +440,9 @@ extension ResultingResult<T, E> on Result<Result<T, E>, E> {
   ///
   /// The flattening operation is only ever a single level deep.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Ok(Ok(2)).flatten()); // "Ok(2)"
   /// print(Ok(Err(2)).flatten()); // "Err(2)"
   /// ```
@@ -342,14 +454,18 @@ extension ResultingResult<T, E> on Result<Result<T, E>, E> {
 class Ok<T, E> extends Result<T, E> {
   /// The contained value.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Ok(2).value); // "2"
   /// ```
   final T value;
 
   /// Creates a successful [Result] with the given [value].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Ok(2)); // "Ok(2)"
   /// ```
   const Ok(this.value) : super._();
@@ -416,14 +532,18 @@ class Ok<T, E> extends Result<T, E> {
 class Err<T, E> extends Result<T, E> {
   /// The contained error.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Err(2).value); // "2"
   /// ```
   final E error;
 
   /// Creates an erroneous [Result] with the given [error].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Err(2)); // "Err(2)"
   /// ```
   const Err(this.error) : super._();

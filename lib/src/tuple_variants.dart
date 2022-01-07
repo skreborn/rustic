@@ -7,7 +7,9 @@ part of '../tuple.dart';
 class Tuple2<I0, I1> extends Tuple {
   /// Item 0.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple2(0, 1);
   ///
   /// print(tuple.0); // "0"
@@ -16,7 +18,9 @@ class Tuple2<I0, I1> extends Tuple {
 
   /// Item 1.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple2(0, 1);
   ///
   /// print(tuple.1); // "1"
@@ -28,7 +32,9 @@ class Tuple2<I0, I1> extends Tuple {
 
   /// Creates a [Tuple] of 2 items.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple2(0, 1);
   ///
   /// print(tuple); // "(0, 1)"
@@ -44,7 +50,9 @@ class Tuple2<I0, I1> extends Tuple {
 class Tuple3<I0, I1, I2> extends Tuple {
   /// Item 0.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple3(0, 1, 2);
   ///
   /// print(tuple.0); // "0"
@@ -53,7 +61,9 @@ class Tuple3<I0, I1, I2> extends Tuple {
 
   /// Item 1.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple3(0, 1, 2);
   ///
   /// print(tuple.1); // "1"
@@ -62,7 +72,9 @@ class Tuple3<I0, I1, I2> extends Tuple {
 
   /// Item 2.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple3(0, 1, 2);
   ///
   /// print(tuple.2); // "2"
@@ -74,7 +86,9 @@ class Tuple3<I0, I1, I2> extends Tuple {
 
   /// Creates a [Tuple] of 3 items.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple3(0, 1, 2);
   ///
   /// print(tuple); // "(0, 1, 2)"
@@ -91,7 +105,9 @@ class Tuple3<I0, I1, I2> extends Tuple {
 class Tuple4<I0, I1, I2, I3> extends Tuple {
   /// Item 0.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple4(0, 1, 2, 3);
   ///
   /// print(tuple.0); // "0"
@@ -100,7 +116,9 @@ class Tuple4<I0, I1, I2, I3> extends Tuple {
 
   /// Item 1.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple4(0, 1, 2, 3);
   ///
   /// print(tuple.1); // "1"
@@ -109,7 +127,9 @@ class Tuple4<I0, I1, I2, I3> extends Tuple {
 
   /// Item 2.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple4(0, 1, 2, 3);
   ///
   /// print(tuple.2); // "2"
@@ -118,7 +138,9 @@ class Tuple4<I0, I1, I2, I3> extends Tuple {
 
   /// Item 3.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple4(0, 1, 2, 3);
   ///
   /// print(tuple.3); // "3"
@@ -130,7 +152,9 @@ class Tuple4<I0, I1, I2, I3> extends Tuple {
 
   /// Creates a [Tuple] of 4 items.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple4(0, 1, 2, 3);
   ///
   /// print(tuple); // "(0, 1, 2, 3)"
@@ -148,7 +172,9 @@ class Tuple4<I0, I1, I2, I3> extends Tuple {
 class Tuple5<I0, I1, I2, I3, I4> extends Tuple {
   /// Item 0.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple5(0, 1, 2, 3, 4);
   ///
   /// print(tuple.0); // "0"
@@ -157,7 +183,9 @@ class Tuple5<I0, I1, I2, I3, I4> extends Tuple {
 
   /// Item 1.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple5(0, 1, 2, 3, 4);
   ///
   /// print(tuple.1); // "1"
@@ -166,7 +194,9 @@ class Tuple5<I0, I1, I2, I3, I4> extends Tuple {
 
   /// Item 2.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple5(0, 1, 2, 3, 4);
   ///
   /// print(tuple.2); // "2"
@@ -175,7 +205,9 @@ class Tuple5<I0, I1, I2, I3, I4> extends Tuple {
 
   /// Item 3.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple5(0, 1, 2, 3, 4);
   ///
   /// print(tuple.3); // "3"
@@ -184,7 +216,9 @@ class Tuple5<I0, I1, I2, I3, I4> extends Tuple {
 
   /// Item 4.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple5(0, 1, 2, 3, 4);
   ///
   /// print(tuple.4); // "4"
@@ -196,7 +230,9 @@ class Tuple5<I0, I1, I2, I3, I4> extends Tuple {
 
   /// Creates a [Tuple] of 5 items.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple5(0, 1, 2, 3, 4);
   ///
   /// print(tuple); // "(0, 1, 2, 3, 4)"
@@ -215,7 +251,9 @@ class Tuple5<I0, I1, I2, I3, I4> extends Tuple {
 class Tuple6<I0, I1, I2, I3, I4, I5> extends Tuple {
   /// Item 0.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple6(0, 1, 2, 3, 4, 5);
   ///
   /// print(tuple.0); // "0"
@@ -224,7 +262,9 @@ class Tuple6<I0, I1, I2, I3, I4, I5> extends Tuple {
 
   /// Item 1.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple6(0, 1, 2, 3, 4, 5);
   ///
   /// print(tuple.1); // "1"
@@ -233,7 +273,9 @@ class Tuple6<I0, I1, I2, I3, I4, I5> extends Tuple {
 
   /// Item 2.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple6(0, 1, 2, 3, 4, 5);
   ///
   /// print(tuple.2); // "2"
@@ -242,7 +284,9 @@ class Tuple6<I0, I1, I2, I3, I4, I5> extends Tuple {
 
   /// Item 3.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple6(0, 1, 2, 3, 4, 5);
   ///
   /// print(tuple.3); // "3"
@@ -251,7 +295,9 @@ class Tuple6<I0, I1, I2, I3, I4, I5> extends Tuple {
 
   /// Item 4.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple6(0, 1, 2, 3, 4, 5);
   ///
   /// print(tuple.4); // "4"
@@ -260,7 +306,9 @@ class Tuple6<I0, I1, I2, I3, I4, I5> extends Tuple {
 
   /// Item 5.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple6(0, 1, 2, 3, 4, 5);
   ///
   /// print(tuple.5); // "5"
@@ -272,7 +320,9 @@ class Tuple6<I0, I1, I2, I3, I4, I5> extends Tuple {
 
   /// Creates a [Tuple] of 6 items.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple6(0, 1, 2, 3, 4, 5);
   ///
   /// print(tuple); // "(0, 1, 2, 3, 4, 5)"
@@ -292,7 +342,9 @@ class Tuple6<I0, I1, I2, I3, I4, I5> extends Tuple {
 class Tuple7<I0, I1, I2, I3, I4, I5, I6> extends Tuple {
   /// Item 0.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple7(0, 1, 2, 3, 4, 5, 6);
   ///
   /// print(tuple.0); // "0"
@@ -301,7 +353,9 @@ class Tuple7<I0, I1, I2, I3, I4, I5, I6> extends Tuple {
 
   /// Item 1.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple7(0, 1, 2, 3, 4, 5, 6);
   ///
   /// print(tuple.1); // "1"
@@ -310,7 +364,9 @@ class Tuple7<I0, I1, I2, I3, I4, I5, I6> extends Tuple {
 
   /// Item 2.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple7(0, 1, 2, 3, 4, 5, 6);
   ///
   /// print(tuple.2); // "2"
@@ -319,7 +375,9 @@ class Tuple7<I0, I1, I2, I3, I4, I5, I6> extends Tuple {
 
   /// Item 3.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple7(0, 1, 2, 3, 4, 5, 6);
   ///
   /// print(tuple.3); // "3"
@@ -328,7 +386,9 @@ class Tuple7<I0, I1, I2, I3, I4, I5, I6> extends Tuple {
 
   /// Item 4.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple7(0, 1, 2, 3, 4, 5, 6);
   ///
   /// print(tuple.4); // "4"
@@ -337,7 +397,9 @@ class Tuple7<I0, I1, I2, I3, I4, I5, I6> extends Tuple {
 
   /// Item 5.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple7(0, 1, 2, 3, 4, 5, 6);
   ///
   /// print(tuple.5); // "5"
@@ -346,7 +408,9 @@ class Tuple7<I0, I1, I2, I3, I4, I5, I6> extends Tuple {
 
   /// Item 6.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple7(0, 1, 2, 3, 4, 5, 6);
   ///
   /// print(tuple.6); // "6"
@@ -358,7 +422,9 @@ class Tuple7<I0, I1, I2, I3, I4, I5, I6> extends Tuple {
 
   /// Creates a [Tuple] of 7 items.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple7(0, 1, 2, 3, 4, 5, 6);
   ///
   /// print(tuple); // "(0, 1, 2, 3, 4, 5, 6)"
@@ -379,7 +445,9 @@ class Tuple7<I0, I1, I2, I3, I4, I5, I6> extends Tuple {
 class Tuple8<I0, I1, I2, I3, I4, I5, I6, I7> extends Tuple {
   /// Item 0.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple8(0, 1, 2, 3, 4, 5, 6, 7);
   ///
   /// print(tuple.0); // "0"
@@ -388,7 +456,9 @@ class Tuple8<I0, I1, I2, I3, I4, I5, I6, I7> extends Tuple {
 
   /// Item 1.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple8(0, 1, 2, 3, 4, 5, 6, 7);
   ///
   /// print(tuple.1); // "1"
@@ -397,7 +467,9 @@ class Tuple8<I0, I1, I2, I3, I4, I5, I6, I7> extends Tuple {
 
   /// Item 2.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple8(0, 1, 2, 3, 4, 5, 6, 7);
   ///
   /// print(tuple.2); // "2"
@@ -406,7 +478,9 @@ class Tuple8<I0, I1, I2, I3, I4, I5, I6, I7> extends Tuple {
 
   /// Item 3.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple8(0, 1, 2, 3, 4, 5, 6, 7);
   ///
   /// print(tuple.3); // "3"
@@ -415,7 +489,9 @@ class Tuple8<I0, I1, I2, I3, I4, I5, I6, I7> extends Tuple {
 
   /// Item 4.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple8(0, 1, 2, 3, 4, 5, 6, 7);
   ///
   /// print(tuple.4); // "4"
@@ -424,7 +500,9 @@ class Tuple8<I0, I1, I2, I3, I4, I5, I6, I7> extends Tuple {
 
   /// Item 5.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple8(0, 1, 2, 3, 4, 5, 6, 7);
   ///
   /// print(tuple.5); // "5"
@@ -433,7 +511,9 @@ class Tuple8<I0, I1, I2, I3, I4, I5, I6, I7> extends Tuple {
 
   /// Item 6.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple8(0, 1, 2, 3, 4, 5, 6, 7);
   ///
   /// print(tuple.6); // "6"
@@ -442,7 +522,9 @@ class Tuple8<I0, I1, I2, I3, I4, I5, I6, I7> extends Tuple {
 
   /// Item 7.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple8(0, 1, 2, 3, 4, 5, 6, 7);
   ///
   /// print(tuple.7); // "7"
@@ -454,7 +536,9 @@ class Tuple8<I0, I1, I2, I3, I4, I5, I6, I7> extends Tuple {
 
   /// Creates a [Tuple] of 8 items.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// final tuple = Tuple8(0, 1, 2, 3, 4, 5, 6, 7);
   ///
   /// print(tuple); // "(0, 1, 2, 3, 4, 5, 6, 7)"

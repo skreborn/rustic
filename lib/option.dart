@@ -8,7 +8,13 @@ import 'tuple.dart';
 ///
 /// An [Option] either contains a value ([Some]) or it does not ([None]).
 ///
-/// ```
+/// # Examples
+///
+/// The following function tries to multiply two integers after parsing them.
+/// Upon success, the resulting value is wrapped in a [Some].
+/// If an error occurs during conversion, a [None] is returned.
+///
+/// ```dart
 /// Option<int> multiply(String a, String b) {
 ///   return int.tryParse(a).asOption().and((a) {
 ///     return int.tryParse(b).asOption().map((b) => a * b);
@@ -16,7 +22,11 @@ import 'tuple.dart';
 /// }
 /// ```
 ///
-/// ```
+/// That function can now be used to try and multiply two integers encoded as
+/// strings and returning [None] if that operation is not possible due to a
+/// conversion error.
+///
+/// ```dart
 /// print(multiply('2', '3')); // "Some(6)"
 /// print(multiply('two', '3')); // "None"
 /// ```
@@ -26,7 +36,9 @@ abstract class Option<T> extends Equatable {
   /// Creates a [Some] with the given [value], if it is not `null`, or a [None]
   /// otherwise.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Option(2)); // "Some(2)"
   /// print(Option(null)); // "None"
   /// ```
@@ -34,14 +46,18 @@ abstract class Option<T> extends Equatable {
 
   /// Creates a [Some] with the given [value].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Option.some(2)); // "Some(2)"
   /// ```
   const factory Option.some(T value) = Some<T>;
 
   /// Creates a [None].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Option.none()); // "None"
   /// ```
   const factory Option.none() = None<T>;
@@ -50,7 +66,9 @@ abstract class Option<T> extends Equatable {
 
   /// `true` if `this` is a [Some].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Some(2).isSome); // "true"
   /// print(None().isSome); // "false"
   /// ```
@@ -58,7 +76,9 @@ abstract class Option<T> extends Equatable {
 
   /// `true` if `this` is a [None].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Some(2).isNone); // "false"
   /// print(None().isNone); // "true"
   /// ```
@@ -66,7 +86,9 @@ abstract class Option<T> extends Equatable {
 
   /// Returns an iterable over the possibly contained value.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Some(2).iterable.length); // "1"
   /// print(None().iterable.length); // "0"
   /// ```
@@ -74,7 +96,9 @@ abstract class Option<T> extends Equatable {
 
   /// Returns the contained value if `this` is a [Some], otherwise `null`.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Some(2).asPlain()); // "2"
   /// print(None().asPlain()); // "null"
   /// ```
@@ -82,7 +106,9 @@ abstract class Option<T> extends Equatable {
 
   /// Returns `true` if `this` is a [Some] with the given [value].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Some(2).contains(2)); // "true"
   /// print(Some(2).contains(3)); // "false"
   /// print(None().contains(2)); // "false"
@@ -91,16 +117,34 @@ abstract class Option<T> extends Equatable {
 
   /// Executes [fn] if `this` is a [Some].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// For a [Some], [fn] is called with the contained value.
+  ///
+  /// ```dart
   /// Some(2).whenSome((_) => print('some')); // "some"
+  /// ```
+  ///
+  /// For a [None], [fn] is never called.
+  ///
+  /// ```dart
   /// None(2).whenSome((_) => print('some')); // Outputs nothing
   /// ```
   void whenSome(void Function(T value) fn);
 
   /// Executes [fn] if `this` is a [None].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// For a [Some], [fn] is never called.
+  ///
+  /// ```dart
   /// Some(2).whenNone(() => print('none')); // Outputs nothing
+  /// ```
+  ///
+  /// For a [None], [fn] is called.
+  ///
+  /// ```dart
   /// None(2).whenNone(() => print('none')); // "none"
   /// ```
   void whenNone(void Function() fn);
@@ -108,8 +152,17 @@ abstract class Option<T> extends Equatable {
   /// Applies mapping function [fSome] if `this` is a [Some] and [fNone]
   /// otherwise.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// For a [Some], [fSome] is called with the contained value.
+  ///
+  /// ```dart
   /// print(Some(2).match((_) => 'some', () => 'none')); // "some"
+  /// ```
+  ///
+  /// For a [None], [fNone] is called.
+  ///
+  /// ```dart
   /// print(None().match((_) => 'some', () => 'none')); // "none"
   /// ```
   U match<U>(U Function(T value) fSome, U Function() fNone);
@@ -118,10 +171,14 @@ abstract class Option<T> extends Equatable {
   ///
   /// If `this` is a [None], [ifNone] is called to compute a fallback value.
   ///
+  /// # Throws
+  ///
   /// Throws a [StateError] (with custom message [msg] if provided) if `this` is
   /// a [None] and [ifNone] is `null`.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Some(2).unwrap()); // "2"
   /// print(None().unwrap()); // Throws a `StateError`
   /// ```
@@ -129,10 +186,14 @@ abstract class Option<T> extends Equatable {
 
   /// Expects `this` to be [None] and returns nothing.
   ///
+  /// # Throws
+  ///
   /// Throws a [StateError] (with custom message [msg] if provided) if `this` is
   /// a [Some].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// Some(2).unwrapNone(); // Throws a `StateError`
   /// None().unwrapNone(); // Does not throw
   /// ```
@@ -143,17 +204,27 @@ abstract class Option<T> extends Equatable {
   /// If `this` is a [None], and [ifNone] is not `null`, it is called to compute
   /// a fallback value.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// For a [Some], [map] is called with the contained value.
+  ///
+  /// ```dart
   /// print(Some(2).map((_) => 'some')); // "Some(some)"
+  /// ```
+  ///
+  /// For a [None], [map] is never called.
+  ///
+  /// ```dart
   /// print(None().map((_) => 'some')); // "None"
   /// ```
   Option<U> map<U>(U Function(T value) map, {U Function() ifNone});
 
   /// Transforms an [Option] into a [Result], mapping [Some] to [Ok] and [None]
-  /// to [Err] using
-  /// [ifNone].
+  /// to [Err] using [ifNone].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Some(2).okOr(() => 'none'); // "Ok(2)"
   /// print(None().okOr(() => 'none'); // "Err(none)"
   /// ```
@@ -162,8 +233,17 @@ abstract class Option<T> extends Equatable {
   /// Returns the result of calling [other] if `this` is a [Some], otherwise
   /// [None].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// For a [Some], [other] is called with the contained value.
+  ///
+  /// ```dart
   /// print(Some(2).and((_) => Some(3)); // "Some(3)"
+  /// ```
+  ///
+  /// For a [None], [other] is never called.
+  ///
+  /// ```dart
   /// print(None().and((_) => Some(3)); // "None"
   /// ```
   Option<U> and<U>(Option<U> Function(T value) other);
@@ -171,8 +251,17 @@ abstract class Option<T> extends Equatable {
   /// Returns `this` unchanged if `this` is a [Some], otherwise the result of
   /// calling [other].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// For a [Some], [other] is never called.
+  ///
+  /// ```dart
   /// print(Some(2).or((_) => Some(3)); // "Some(2)"
+  /// ```
+  ///
+  /// For a [None], [other] is called.
+  ///
+  /// ```dart
   /// print(None().or((_) => Some(3)); // "Some(3)"
   /// ```
   Option<T> or(Option<T> Function() other);
@@ -180,7 +269,9 @@ abstract class Option<T> extends Equatable {
   /// Returns `this` unchanged if either, but not both, of `this` and [other] is
   /// a [Some], otherwise [None].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Some(2).xor(Some(3)); // "None"
   /// print(Some(2).xor(None()); // "Some(2)"
   /// ```
@@ -189,7 +280,9 @@ abstract class Option<T> extends Equatable {
   /// Returns `this` unchanged if `this` is a [Some] and satisfies [condition],
   /// otherwise [None].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Some(2).where((_) => true); // "Some(2)"
   /// print(Some(2).where((_) => false); // "None"
   /// ```
@@ -198,7 +291,9 @@ abstract class Option<T> extends Equatable {
   /// Returns [Some] if `this` is a [Some] with a value of type [U], otherwise
   /// [None].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Some(2).whereType<int>()); // "Some(2)"
   /// print(Some(2).whereType<bool>()); // "None"
   /// ```
@@ -207,7 +302,9 @@ abstract class Option<T> extends Equatable {
   /// Returns [Some] with a [Tuple2] value if both `this` and the result of
   /// calling [other] are [Some], otherwise [None].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Some(2).zip(Some('some')); // "Some(Tuple2(2, some))"
   /// print(Some(2).zip(None()); // "None"
   /// ```
@@ -216,7 +313,9 @@ abstract class Option<T> extends Equatable {
   /// Returns [Some] with the result of calling [zipper] if both `this` and the
   /// result of calling [other] are [Some], otherwise [None].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Some(2).zipWith(Some(3), (a, b) => a + b); // "Some(5)"
   /// print(Some(2).zipWith(None(), (a, b) => a + b); // "None"
   /// ```
@@ -229,7 +328,9 @@ abstract class Option<T> extends Equatable {
   ///
   /// Type information is included if [typeInfo] is `true`.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Some<int>(2).toString()); // "Some(2)"
   /// print(None<int>().toString(true)); // "None<int>"
   /// ```
@@ -242,7 +343,9 @@ extension Optionable<T> on T? {
   /// Creates a [Some] with `this` as its value, if it is not `null`, or a
   /// [None] otherwise.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(2.asOption()); // "Some(2)"
   /// print(null.asOption()); // "None"
   /// ```
@@ -258,7 +361,9 @@ extension OptionalResult<T, E> on Option<Result<T, E>> {
   /// [Ok] value will be mapped to an [Ok] with a [Some] value, and a [Some]
   /// with an [Err] value will be mapped to an [Err].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Some(Ok(2)).transpose()); // "Ok(Some(2))"
   /// print(Some(Err(2)).transpose()); // "Err(2)"
   /// ```
@@ -276,7 +381,9 @@ extension OptionalOption<T> on Option<Option<T>> {
   ///
   /// The flattening operation is only ever a single level deep.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Some(Some(2)).flatten()); // "Some(2)"
   /// print(Some(None()).flatten()); // "None"
   /// ```
@@ -288,14 +395,18 @@ extension OptionalOption<T> on Option<Option<T>> {
 class Some<T> extends Option<T> {
   /// The contained value.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Some(2).value); // "2"
   /// ```
   final T value;
 
   /// Creates an [Option] with the given [value].
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(Some(2)); // "Some(2)"
   /// ```
   const Some(this.value) : super._();
@@ -383,7 +494,9 @@ class Some<T> extends Option<T> {
 class None<T> extends Option<T> {
   /// Creates an [Option] with no value.
   ///
-  /// ```
+  /// # Examples
+  ///
+  /// ```dart
   /// print(None()); // "None"
   /// ```
   const None() : super._();
