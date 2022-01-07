@@ -23,20 +23,32 @@ void main() {
           equals(const Err<int, String>('2')),
         );
       });
+    });
 
-      test('collect', () {
-        final err = Result<int, int>.collect((check) {
-          final first = check(const Ok<int, String>(2).mapErr(int.parse));
-          final second = check(const Err<int, String>('3').mapErr(int.parse));
+    group('static methods', () {
+      test('collect', () async {
+        final err = await Result.collect<int, int>((check) async {
+          final first = check(
+            await const Ok<int, String>(2).mapErr(int.parse),
+          );
+
+          final second = check(
+            await const Err<int, String>('3').mapErr(int.parse),
+          );
 
           return Ok(first + second);
         });
 
         expect(err, equals(const Err<int, int>(3)));
 
-        final ok = Result<int, int>.collect((check) {
-          final first = check(const Ok<int, String>(2).mapErr(int.parse));
-          final second = check(const Ok<int, String>(3).mapErr(int.parse));
+        final ok = await Result.collect<int, int>((check) async {
+          final first = check(
+            await const Ok<int, String>(2).mapErr(int.parse),
+          );
+
+          final second = check(
+            await const Ok<int, String>(3).mapErr(int.parse),
+          );
 
           return Ok(first + second);
         });
@@ -44,7 +56,37 @@ void main() {
         expect(ok, equals(const Ok<int, int>(5)));
       });
 
-      test('catchExceptions', () {
+      test('collectSync', () {
+        final err = Result.collectSync<int, int>((check) {
+          final first = check(
+            const Ok<int, String>(2).mapErrSync(int.parse),
+          );
+
+          final second = check(
+            const Err<int, String>('3').mapErrSync(int.parse),
+          );
+
+          return Ok(first + second);
+        });
+
+        expect(err, equals(const Err<int, int>(3)));
+
+        final ok = Result.collectSync<int, int>((check) {
+          final first = check(
+            const Ok<int, String>(2).mapErrSync(int.parse),
+          );
+
+          final second = check(
+            const Ok<int, String>(3).mapErrSync(int.parse),
+          );
+
+          return Ok(first + second);
+        });
+
+        expect(ok, equals(const Ok<int, int>(5)));
+      });
+
+      test('catchExceptions', () async {
         Option<Err<int, String>> mapEx(Exception ex) {
           if (ex is FormatException) {
             return Some(Err('fail: ${ex.source}'));
@@ -53,20 +95,50 @@ void main() {
           return const None();
         }
 
-        final err = Result<int, String>.catchException(() {
+        final err = await Result.catchException<int, String>(() {
           return int.parse('II');
         }, mapEx);
 
         expect(err, equals(const Err<int, String>('fail: II')));
 
-        final ok = Result<int, String>.catchException(() {
+        final ok = await Result.catchException<int, String>(() {
           return int.parse('2');
         }, mapEx);
 
         expect(ok, equals(const Ok<int, String>(2)));
 
         expect(
-          () => Result<int, String>.catchException(
+          () async => Result.catchException<int, String>(
+            () => throw const _EmptyException(),
+            mapEx,
+          ),
+          throwsA(predicate<Object>((ex) => ex is _EmptyException)),
+        );
+      });
+
+      test('catchExceptionsSync', () {
+        Option<Err<int, String>> mapEx(Exception ex) {
+          if (ex is FormatException) {
+            return Some(Err('fail: ${ex.source}'));
+          }
+
+          return const None();
+        }
+
+        final err = Result.catchExceptionSync<int, String>(() {
+          return int.parse('II');
+        }, mapEx);
+
+        expect(err, equals(const Err<int, String>('fail: II')));
+
+        final ok = Result.catchExceptionSync<int, String>(() {
+          return int.parse('2');
+        }, mapEx);
+
+        expect(ok, equals(const Ok<int, String>(2)));
+
+        expect(
+          () => Result.catchExceptionSync<int, String>(
             () => throw const _EmptyException(),
             mapEx,
           ),
@@ -127,25 +199,49 @@ void main() {
         expect(const Ok<int, String>(2).containsErr('2'), isFalse);
       });
 
-      test('whenOk', () {
+      test('whenOk', () async {
         var pair = const Tuple2<int?, String?>(null, null);
 
-        const Ok<int, String>(2).whenOk((value) => pair = Tuple2(value, null));
+        await const Ok<int, String>(2).whenOk((value) {
+          pair = Tuple2(value, null);
+        });
 
         expect(pair, equals(const Tuple2<int?, String?>(2, null)));
       });
 
-      test('whenErr', () {
+      test('whenOkSync', () {
         var pair = const Tuple2<int?, String?>(null, null);
 
-        const Ok<int, String>(2).whenErr((err) => pair = Tuple2(null, err));
+        const Ok<int, String>(2).whenOkSync((value) {
+          pair = Tuple2(value, null);
+        });
+
+        expect(pair, equals(const Tuple2<int?, String?>(2, null)));
+      });
+
+      test('whenErr', () async {
+        var pair = const Tuple2<int?, String?>(null, null);
+
+        await const Ok<int, String>(2).whenErr((err) {
+          pair = Tuple2(null, err);
+        });
 
         expect(pair, equals(const Tuple2<int?, String?>(null, null)));
       });
 
-      test('match', () {
+      test('whenErrSync', () {
+        var pair = const Tuple2<int?, String?>(null, null);
+
+        const Ok<int, String>(2).whenErrSync((err) {
+          pair = Tuple2(null, err);
+        });
+
+        expect(pair, equals(const Tuple2<int?, String?>(null, null)));
+      });
+
+      test('match', () async {
         expect(
-          const Ok<int, String>(2).match(
+          await const Ok<int, String>(2).match(
             (value) => value.toString(),
             (error) => error,
           ),
@@ -153,25 +249,49 @@ void main() {
         );
       });
 
-      test('unwrap', () {
-        expect(const Ok<int, String>(2).unwrap(), equals(2));
-        expect(const Ok<int, String>(2).unwrap(msg: 'custom'), equals(2));
-        expect(const Ok<int, String>(2).unwrap(ifErr: int.parse), equals(2));
+      test('matchSync', () {
+        expect(
+          const Ok<int, String>(2).matchSync(
+            (value) => value.toString(),
+            (error) => error,
+          ),
+          equals('2'),
+        );
       });
 
-      test('unwrapErr', () {
+      test('unwrap', () async {
+        expect(await const Ok<int, String>(2).unwrap(), equals(2));
+        expect(await const Ok<int, String>(2).unwrap(msg: 'custom'), equals(2));
+
         expect(
-          () => const Ok<int, String>(2).unwrapErr(),
+          await const Ok<int, String>(2).unwrap(ifErr: int.parse),
+          equals(2),
+        );
+      });
+
+      test('unwrapSync', () {
+        expect(const Ok<int, String>(2).unwrapSync(), equals(2));
+        expect(const Ok<int, String>(2).unwrapSync(msg: 'custom'), equals(2));
+
+        expect(
+          const Ok<int, String>(2).unwrapSync(ifErr: int.parse),
+          equals(2),
+        );
+      });
+
+      test('unwrapErr', () async {
+        expect(
+          () async => const Ok<int, String>(2).unwrapErr(),
           throwsA(
             predicate<Object>((error) {
               return error is StateError &&
-                  error.message == 'called `Result.unwrapErr()` on an `Ok`: 2';
+                  error.message == 'tried to unwrap `Ok` as `Err`: 2';
             }),
           ),
         );
 
         expect(
-          () => const Ok<int, String>(2).unwrapErr(msg: 'custom'),
+          () async => const Ok<int, String>(2).unwrapErr(msg: 'custom'),
           throwsA(
             predicate<Object>((error) {
               return error is StateError && error.message == 'custom: 2';
@@ -180,43 +300,119 @@ void main() {
         );
 
         expect(
-          const Ok<String, int>('2').unwrapErr(ifOk: int.parse),
+          await const Ok<String, int>('2').unwrapErr(ifOk: int.parse),
           equals(2),
         );
       });
 
-      test('map', () {
+      test('unwrapErrSync', () {
         expect(
-          const Ok<String, int>('2').map(int.parse),
+          () => const Ok<int, String>(2).unwrapErrSync(),
+          throwsA(
+            predicate<Object>((error) {
+              return error is StateError &&
+                  error.message == 'tried to unwrap `Ok` as `Err`: 2';
+            }),
+          ),
+        );
+
+        expect(
+          () => const Ok<int, String>(2).unwrapErrSync(msg: 'custom'),
+          throwsA(
+            predicate<Object>((error) {
+              return error is StateError && error.message == 'custom: 2';
+            }),
+          ),
+        );
+
+        expect(
+          const Ok<String, int>('2').unwrapErrSync(ifOk: int.parse),
+          equals(2),
+        );
+      });
+
+      test('map', () async {
+        expect(
+          await const Ok<String, int>('2').map(int.parse),
           equals(const Ok<int, int>(2)),
         );
 
         expect(
-          const Ok<String, int>('2').map(int.parse, ifErr: (error) => error),
+          await const Ok<String, int>('2').map(
+            int.parse,
+            ifErr: (error) => error,
+          ),
           equals(const Ok<int, int>(2)),
         );
       });
 
-      test('and', () {
+      test('mapSync', () {
         expect(
-          const Ok<int, String>(2).and((value) => Ok(value == 2)),
+          const Ok<String, int>('2').mapSync(int.parse),
+          equals(const Ok<int, int>(2)),
+        );
+
+        expect(
+          const Ok<String, int>('2').mapSync(
+            int.parse,
+            ifErr: (error) => error,
+          ),
+          equals(const Ok<int, int>(2)),
+        );
+      });
+
+      test('and', () async {
+        expect(
+          await const Ok<int, String>(2).and((value) => Ok(value == 2)),
           equals(const Ok<bool, String>(true)),
         );
 
         expect(
-          const Ok<int, String>(2).and<bool>((value) => Err(value.toString())),
+          await const Ok<int, String>(2).and<bool>((value) {
+            return Err(value.toString());
+          }),
           equals(const Err<bool, String>('2')),
         );
       });
 
-      test('or', () {
+      test('andSync', () {
         expect(
-          const Ok<int, String>(2).or<String>((error) => Ok(int.parse(error))),
+          const Ok<int, String>(2).andSync((value) => Ok(value == 2)),
+          equals(const Ok<bool, String>(true)),
+        );
+
+        expect(
+          const Ok<int, String>(2).andSync<bool>((value) {
+            return Err(value.toString());
+          }),
+          equals(const Err<bool, String>('2')),
+        );
+      });
+
+      test('or', () async {
+        expect(
+          await const Ok<int, String>(2).or<String>((error) {
+            return Ok(int.parse(error));
+          }),
           equals(const Ok<int, String>(2)),
         );
 
         expect(
-          const Ok<int, String>(2).or((error) => Err(error)),
+          await const Ok<int, String>(2).or((error) => Err(error)),
+          equals(const Ok<int, String>(2)),
+        );
+      });
+
+      test('orSync', () {
+        expect(
+          const Ok<int, String>(2).orSync<String>((error) {
+            return Ok(int.parse(error));
+          }),
+          equals(const Ok<int, String>(2)),
+        );
+
+        expect(
+          const Ok<int, String>(2).orSync((error) => Err(error)),
           equals(const Ok<int, String>(2)),
         );
       });
@@ -278,29 +474,49 @@ void main() {
         expect(const Err<int, String>('3').containsErr('2'), isFalse);
       });
 
-      test('whenOk', () {
+      test('whenOk', () async {
         var pair = const Tuple2<int?, String?>(null, null);
 
-        const Err<int, String>('2').whenOk((value) {
+        await const Err<int, String>('2').whenOk((value) {
           pair = Tuple2(value, null);
         });
 
         expect(pair, equals(const Tuple2<int?, String?>(null, null)));
       });
 
-      test('whenErr', () {
+      test('whenOkSync', () {
         var pair = const Tuple2<int?, String?>(null, null);
 
-        const Err<int, String>('2').whenErr((err) {
+        const Err<int, String>('2').whenOkSync((value) {
+          pair = Tuple2(value, null);
+        });
+
+        expect(pair, equals(const Tuple2<int?, String?>(null, null)));
+      });
+
+      test('whenErr', () async {
+        var pair = const Tuple2<int?, String?>(null, null);
+
+        await const Err<int, String>('2').whenErr((err) {
           pair = Tuple2(null, err);
         });
 
         expect(pair, equals(const Tuple2<int?, String?>(null, '2')));
       });
 
-      test('match', () {
+      test('whenErrSync', () {
+        var pair = const Tuple2<int?, String?>(null, null);
+
+        const Err<int, String>('2').whenErrSync((err) {
+          pair = Tuple2(null, err);
+        });
+
+        expect(pair, equals(const Tuple2<int?, String?>(null, '2')));
+      });
+
+      test('match', () async {
         expect(
-          const Err<int, String>('2').match(
+          await const Err<int, String>('2').match(
             (value) => value.toString(),
             (error) => error,
           ),
@@ -308,19 +524,29 @@ void main() {
         );
       });
 
-      test('unwrap', () {
+      test('matchSync', () {
         expect(
-          () => const Err<int, String>('2').unwrap(),
+          const Err<int, String>('2').matchSync(
+            (value) => value.toString(),
+            (error) => error,
+          ),
+          equals('2'),
+        );
+      });
+
+      test('unwrap', () async {
+        expect(
+          () async => const Err<int, String>('2').unwrap(),
           throwsA(
             predicate<Object>((error) {
               return error is StateError &&
-                  error.message == 'called `Result.unwrap()` on an `Err`: 2';
+                  error.message == 'tried to unwrap `Err` as `Ok`: 2';
             }),
           ),
         );
 
         expect(
-          () => const Err<int, String>('2').unwrap(msg: 'custom'),
+          () async => const Err<int, String>('2').unwrap(msg: 'custom'),
           throwsA(
             predicate<Object>((error) {
               return error is StateError && error.message == 'custom: 2';
@@ -328,56 +554,148 @@ void main() {
           ),
         );
 
-        expect(const Err<int, String>('3').unwrap(ifErr: int.parse), equals(3));
+        expect(
+          await const Err<int, String>('3').unwrap(ifErr: int.parse),
+          equals(3),
+        );
       });
 
-      test('unwrapErr', () {
-        expect(const Err<int, String>('2').unwrapErr(), equals('2'));
+      test('unwrapSync', () {
+        expect(
+          () => const Err<int, String>('2').unwrapSync(),
+          throwsA(
+            predicate<Object>((error) {
+              return error is StateError &&
+                  error.message == 'tried to unwrap `Err` as `Ok`: 2';
+            }),
+          ),
+        );
 
         expect(
-          const Err<int, String>('2').unwrapErr(msg: 'custom'),
+          () => const Err<int, String>('2').unwrapSync(msg: 'custom'),
+          throwsA(
+            predicate<Object>((error) {
+              return error is StateError && error.message == 'custom: 2';
+            }),
+          ),
+        );
+
+        expect(
+          const Err<int, String>('3').unwrapSync(ifErr: int.parse),
+          equals(3),
+        );
+      });
+
+      test('unwrapErr', () async {
+        expect(await const Err<int, String>('2').unwrapErr(), equals('2'));
+
+        expect(
+          await const Err<int, String>('2').unwrapErr(msg: 'custom'),
           equals('2'),
         );
 
-        expect(const Err<String, int>(3).unwrapErr(ifOk: int.parse), equals(3));
+        expect(
+          await const Err<String, int>(3).unwrapErr(ifOk: int.parse),
+          equals(3),
+        );
       });
 
-      test('map', () {
+      test('unwrapErrSync', () {
+        expect(const Err<int, String>('2').unwrapErrSync(), equals('2'));
+
         expect(
-          const Err<String, int>(3).map(int.parse),
+          const Err<int, String>('2').unwrapErrSync(msg: 'custom'),
+          equals('2'),
+        );
+
+        expect(
+          const Err<String, int>(3).unwrapErrSync(ifOk: int.parse),
+          equals(3),
+        );
+      });
+
+      test('map', () async {
+        expect(
+          await const Err<String, int>(3).map(int.parse),
           equals(const Err<int, int>(3)),
         );
 
         expect(
-          const Err<String, int>(3).map(int.parse, ifErr: (error) => error),
+          await const Err<String, int>(3).map(
+            int.parse,
+            ifErr: (error) => error,
+          ),
           equals(const Ok<int, int>(3)),
         );
       });
 
-      test('and', () {
+      test('mapSync', () {
         expect(
-          const Err<int, String>('2').and((value) => Ok(value == 2)),
+          const Err<String, int>(3).mapSync(int.parse),
+          equals(const Err<int, int>(3)),
+        );
+
+        expect(
+          const Err<String, int>(3).mapSync(
+            int.parse,
+            ifErr: (error) => error,
+          ),
+          equals(const Ok<int, int>(3)),
+        );
+      });
+
+      test('and', () async {
+        expect(
+          await const Err<int, String>('2').and((value) => Ok(value == 2)),
           equals(const Err<bool, String>('2')),
         );
 
         expect(
-          const Err<int, String>('2').and<bool>((value) {
+          await const Err<int, String>('2').and<bool>((value) {
             return Err(value.toString());
           }),
           equals(const Err<bool, String>('2')),
         );
       });
 
-      test('or', () {
+      test('andSync', () {
         expect(
-          const Err<int, String>('2').or<String>((error) {
+          const Err<int, String>('2').andSync((value) => Ok(value == 2)),
+          equals(const Err<bool, String>('2')),
+        );
+
+        expect(
+          const Err<int, String>('2').andSync<bool>((value) {
+            return Err(value.toString());
+          }),
+          equals(const Err<bool, String>('2')),
+        );
+      });
+
+      test('or', () async {
+        expect(
+          await const Err<int, String>('2').or<String>((error) {
             return Ok(int.parse(error));
           }),
           equals(const Ok<int, String>(2)),
         );
 
         expect(
-          const Err<int, String>('2').or((error) => Err(error)),
+          await const Err<int, String>('2').or((error) => Err(error)),
+          equals(const Err<int, String>('2')),
+        );
+      });
+
+      test('orSync', () {
+        expect(
+          const Err<int, String>('2').orSync<String>((error) {
+            return Ok(int.parse(error));
+          }),
+          equals(const Ok<int, String>(2)),
+        );
+
+        expect(
+          const Err<int, String>('2').orSync((error) => Err(error)),
           equals(const Err<int, String>('2')),
         );
       });

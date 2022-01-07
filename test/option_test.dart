@@ -55,33 +55,62 @@ void main() {
         expect(const Some(2).contains(3), isFalse);
       });
 
-      test('whenSome', () {
+      test('whenSome', () async {
         var pair = const Tuple2<int?, bool>(null, false);
 
-        const Some(2).whenSome((value) => pair = Tuple2(value, false));
+        await const Some(2).whenSome((value) => pair = Tuple2(value, false));
 
         expect(pair, equals(const Tuple2<int?, bool>(2, false)));
       });
 
-      test('whenNone', () {
+      test('whenSomeSync', () {
         var pair = const Tuple2<int?, bool>(null, false);
 
-        const Some(2).whenNone(() => pair = const Tuple2(null, true));
+        const Some(2).whenSomeSync((value) => pair = Tuple2(value, false));
+
+        expect(pair, equals(const Tuple2<int?, bool>(2, false)));
+      });
+
+      test('whenNone', () async {
+        var pair = const Tuple2<int?, bool>(null, false);
+
+        await const Some(2).whenNone(() => pair = const Tuple2(null, true));
 
         expect(pair, equals(const Tuple2<int?, bool>(null, false)));
       });
 
-      test('match', () {
+      test('whenNoneSync', () {
+        var pair = const Tuple2<int?, bool>(null, false);
+
+        const Some(2).whenNoneSync(() => pair = const Tuple2(null, true));
+
+        expect(pair, equals(const Tuple2<int?, bool>(null, false)));
+      });
+
+      test('match', () async {
         expect(
-          const Some(2).match((value) => 'some: $value', () => 'none'),
+          await const Some(2).match((value) => 'some: $value', () => 'none'),
           equals('some: 2'),
         );
       });
 
-      test('unwrap', () {
-        expect(const Some(2).unwrap(), equals(2));
-        expect(const Some(2).unwrap(msg: 'custom'), equals(2));
-        expect(const Some(2).unwrap(ifNone: () => 3), equals(2));
+      test('matchSync', () {
+        expect(
+          const Some(2).matchSync((value) => 'some: $value', () => 'none'),
+          equals('some: 2'),
+        );
+      });
+
+      test('unwrap', () async {
+        expect(await const Some(2).unwrap(), equals(2));
+        expect(await const Some(2).unwrap(msg: 'custom'), equals(2));
+        expect(await const Some(2).unwrap(ifNone: () => 3), equals(2));
+      });
+
+      test('unwrapSync', () {
+        expect(const Some(2).unwrapSync(), equals(2));
+        expect(const Some(2).unwrapSync(msg: 'custom'), equals(2));
+        expect(const Some(2).unwrapSync(ifNone: () => 3), equals(2));
       });
 
       test('unwrapNone', () {
@@ -90,7 +119,7 @@ void main() {
           throwsA(
             predicate<Object>((err) {
               return err is StateError &&
-                  err.message == 'called `Option.unwrapNone()` on a `Some`: 2';
+                  err.message == 'tried to unwrap `Some` as `None`: 2';
             }),
           ),
         );
@@ -105,45 +134,94 @@ void main() {
         );
       });
 
-      test('map', () {
+      test('map', () async {
         expect(
-          const Some(2).map((value) => value.toString()),
+          await const Some(2).map((value) => value.toString()),
           equals(const Some('2')),
         );
 
         expect(
-          const Some(2).map((value) => value.toString(), ifNone: () => 'none'),
+          await const Some(2).map(
+            (value) => value.toString(),
+            ifNone: () => 'none',
+          ),
           equals(const Some('2')),
         );
       });
 
-      test('okOr', () {
+      test('mapSync', () {
         expect(
-          const Some(2).okOr(() => 'none'),
+          const Some(2).mapSync((value) => value.toString()),
+          equals(const Some('2')),
+        );
+
+        expect(
+          const Some(2).mapSync(
+            (value) => value.toString(),
+            ifNone: () => 'none',
+          ),
+          equals(const Some('2')),
+        );
+      });
+
+      test('okOr', () async {
+        expect(
+          await const Some(2).okOr(() => 'none'),
           equals(const Ok<int, String>(2)),
         );
       });
 
-      test('and', () {
+      test('okOrSync', () {
         expect(
-          const Some(2).and((value) => Some(value.toString())),
+          const Some(2).okOrSync(() => 'none'),
+          equals(const Ok<int, String>(2)),
+        );
+      });
+
+      test('and', () async {
+        expect(
+          await const Some(2).and((value) => Some(value.toString())),
           equals(const Some('2')),
         );
 
         expect(
-          const Some(2).and((value) => const None<String>()),
+          await const Some(2).and((value) => const None<String>()),
           equals(const None<String>()),
         );
       });
 
-      test('or', () {
+      test('andSync', () {
         expect(
-          const Some(2).or(() => const Some(3)),
+          const Some(2).andSync((value) => Some(value.toString())),
+          equals(const Some('2')),
+        );
+
+        expect(
+          const Some(2).andSync((value) => const None<String>()),
+          equals(const None<String>()),
+        );
+      });
+
+      test('or', () async {
+        expect(
+          await const Some(2).or(() => const Some(3)),
           equals(const Some(2)),
         );
 
         expect(
-          const Some(2).or(() => const None<int>()),
+          await const Some(2).or(() => const None<int>()),
+          equals(const Some(2)),
+        );
+      });
+
+      test('orSync', () {
+        expect(
+          const Some(2).orSync(() => const Some(3)),
+          equals(const Some(2)),
+        );
+
+        expect(
+          const Some(2).orSync(() => const None<int>()),
           equals(const Some(2)),
         );
       });
@@ -160,14 +238,26 @@ void main() {
         );
       });
 
-      test('where', () {
+      test('where', () async {
         expect(
-          const Some(2).where((value) => value == 2),
+          await const Some(2).where((value) => value == 2),
           equals(const Some(2)),
         );
 
         expect(
-          const Some(2).where((value) => value == 3),
+          await const Some(2).where((value) => value == 3),
+          equals(const None<int>()),
+        );
+      });
+
+      test('whereSync', () {
+        expect(
+          const Some(2).whereSync((value) => value == 2),
+          equals(const Some(2)),
+        );
+
+        expect(
+          const Some(2).whereSync((value) => value == 3),
           equals(const None<int>()),
         );
       });
@@ -177,21 +267,33 @@ void main() {
         expect(const Some(2).whereType<bool>(), equals(const None<bool>()));
       });
 
-      test('zip', () {
+      test('zip', () async {
         expect(
-          const Some(2).zip((value) => Some('some: $value')),
+          await const Some(2).zip((value) => Some('some: $value')),
           equals(const Some(Tuple2(2, 'some: 2'))),
         );
 
         expect(
-          const Some(2).zip((value) => const None<String>()),
+          await const Some(2).zip((value) => const None<String>()),
           equals(const None<Tuple2<int, String>>()),
         );
       });
 
-      test('zipWith', () {
+      test('zipSync', () {
         expect(
-          const Some(2).zipWith<bool, String>(
+          const Some(2).zipSync((value) => Some('some: $value')),
+          equals(const Some(Tuple2(2, 'some: 2'))),
+        );
+
+        expect(
+          const Some(2).zipSync((value) => const None<String>()),
+          equals(const None<Tuple2<int, String>>()),
+        );
+      });
+
+      test('zipWith', () async {
+        expect(
+          await const Some(2).zipWith<bool, String>(
             (value) => Some(value == 2),
             (a, b) => '$a:$b',
           ),
@@ -199,7 +301,25 @@ void main() {
         );
 
         expect(
-          const Some(2).zipWith<bool, String>(
+          await const Some(2).zipWith<bool, String>(
+            (value) => const None<bool>(),
+            (a, b) => '$a:$b',
+          ),
+          equals(const None<String>()),
+        );
+      });
+
+      test('zipWithSync', () {
+        expect(
+          const Some(2).zipWithSync<bool, String>(
+            (value) => Some(value == 2),
+            (a, b) => '$a:$b',
+          ),
+          equals(const Some('2:true')),
+        );
+
+        expect(
+          const Some(2).zipWithSync<bool, String>(
             (value) => const None<bool>(),
             (a, b) => '$a:$b',
           ),
@@ -230,42 +350,79 @@ void main() {
       test('asPlain', () => expect(const None<int>().asPlain(), isNull));
       test('contains', () => expect(const None<int>().contains(2), isFalse));
 
-      test('whenSome', () {
+      test('whenSome', () async {
         var pair = const Tuple2<int?, bool>(null, false);
 
-        const None<int>().whenSome((value) => pair = Tuple2(value, false));
+        await const None<int>().whenSome((value) {
+          pair = Tuple2(value, false);
+        });
 
         expect(pair, equals(const Tuple2<int?, bool>(null, false)));
       });
 
-      test('whenNone', () {
+      test('whenSomeSync', () {
         var pair = const Tuple2<int?, bool>(null, false);
 
-        const None<int>().whenNone(() => pair = const Tuple2(null, true));
+        const None<int>().whenSomeSync((value) {
+          pair = Tuple2(value, false);
+        });
+
+        expect(pair, equals(const Tuple2<int?, bool>(null, false)));
+      });
+
+      test('whenNone', () async {
+        var pair = const Tuple2<int?, bool>(null, false);
+
+        await const None<int>().whenNone(() {
+          pair = const Tuple2(null, true);
+        });
 
         expect(pair, equals(const Tuple2<int?, bool>(null, true)));
       });
 
-      test('match', () {
+      test('whenNoneSync', () {
+        var pair = const Tuple2<int?, bool>(null, false);
+
+        const None<int>().whenNoneSync(() {
+          pair = const Tuple2(null, true);
+        });
+
+        expect(pair, equals(const Tuple2<int?, bool>(null, true)));
+      });
+
+      test('match', () async {
         expect(
-          const None<int>().match((value) => 'some: $value', () => 'none'),
+          await const None<int>().match(
+            (value) => 'some: $value',
+            () => 'none',
+          ),
           equals('none'),
         );
       });
 
-      test('unwrap', () {
+      test('matchSync', () {
         expect(
-          () => const None<int>().unwrap(),
+          const None<int>().matchSync(
+            (value) => 'some: $value',
+            () => 'none',
+          ),
+          equals('none'),
+        );
+      });
+
+      test('unwrap', () async {
+        expect(
+          () async => const None<int>().unwrap(),
           throwsA(
             predicate<Object>((err) {
               return err is StateError &&
-                  err.message == 'called `Option.unwrap()` on a `None`';
+                  err.message == 'tried to unwrap `None` as `Some`';
             }),
           ),
         );
 
         expect(
-          () => const None<int>().unwrap(msg: 'custom'),
+          () async => const None<int>().unwrap(msg: 'custom'),
           throwsA(
             predicate<Object>((err) {
               return err is StateError && err.message == 'custom';
@@ -273,7 +430,30 @@ void main() {
           ),
         );
 
-        expect(const None<int>().unwrap(ifNone: () => 3), equals(3));
+        expect(await const None<int>().unwrap(ifNone: () => 3), equals(3));
+      });
+
+      test('unwrapSync', () {
+        expect(
+          () => const None<int>().unwrapSync(),
+          throwsA(
+            predicate<Object>((err) {
+              return err is StateError &&
+                  err.message == 'tried to unwrap `None` as `Some`';
+            }),
+          ),
+        );
+
+        expect(
+          () => const None<int>().unwrapSync(msg: 'custom'),
+          throwsA(
+            predicate<Object>((err) {
+              return err is StateError && err.message == 'custom';
+            }),
+          ),
+        );
+
+        expect(const None<int>().unwrapSync(ifNone: () => 3), equals(3));
       });
 
       test('unwrapNone', () {
@@ -288,14 +468,14 @@ void main() {
         );
       });
 
-      test('map', () {
+      test('map', () async {
         expect(
-          const None<int>().map((value) => value.toString()),
+          await const None<int>().map((value) => value.toString()),
           equals(const None<String>()),
         );
 
         expect(
-          const None<int>().map(
+          await const None<int>().map(
             (value) => value.toString(),
             ifNone: () => 'none',
           ),
@@ -303,33 +483,79 @@ void main() {
         );
       });
 
-      test('okOr', () {
+      test('mapSync', () {
         expect(
-          const None<int>().okOr(() => 'none'),
+          const None<int>().mapSync((value) => value.toString()),
+          equals(const None<String>()),
+        );
+
+        expect(
+          const None<int>().mapSync(
+            (value) => value.toString(),
+            ifNone: () => 'none',
+          ),
+          equals(const Some('none')),
+        );
+      });
+
+      test('okOr', () async {
+        expect(
+          await const None<int>().okOr(() => 'none'),
           equals(const Err<int, String>('none')),
         );
       });
 
-      test('and', () {
+      test('okOrSync', () {
         expect(
-          const None<int>().and((value) => Some(value.toString())),
+          const None<int>().okOrSync(() => 'none'),
+          equals(const Err<int, String>('none')),
+        );
+      });
+
+      test('and', () async {
+        expect(
+          await const None<int>().and((value) => Some(value.toString())),
           equals(const None<String>()),
         );
 
         expect(
-          const None<int>().and((value) => const None<String>()),
+          await const None<int>().and((value) => const None<String>()),
           equals(const None<String>()),
         );
       });
 
-      test('or', () {
+      test('andSync', () {
         expect(
-          const None<int>().or(() => const Some(3)),
+          const None<int>().andSync((value) => Some(value.toString())),
+          equals(const None<String>()),
+        );
+
+        expect(
+          const None<int>().andSync((value) => const None<String>()),
+          equals(const None<String>()),
+        );
+      });
+
+      test('or', () async {
+        expect(
+          await const None<int>().or(() => const Some(3)),
           equals(const Some(3)),
         );
 
         expect(
-          const None<int>().or(() => const None<int>()),
+          await const None<int>().or(() => const None<int>()),
+          equals(const None<int>()),
+        );
+      });
+
+      test('orSync', () {
+        expect(
+          const None<int>().orSync(() => const Some(3)),
+          equals(const Some(3)),
+        );
+
+        expect(
+          const None<int>().orSync(() => const None<int>()),
           equals(const None<int>()),
         );
       });
@@ -346,14 +572,26 @@ void main() {
         );
       });
 
-      test('where', () {
+      test('where', () async {
         expect(
-          const None<int>().where((value) => value == 2),
+          await const None<int>().where((value) => value == 2),
           equals(const None<int>()),
         );
 
         expect(
-          const None<int>().where((value) => value == 3),
+          await const None<int>().where((value) => value == 3),
+          equals(const None<int>()),
+        );
+      });
+
+      test('whereSync', () {
+        expect(
+          const None<int>().whereSync((value) => value == 2),
+          equals(const None<int>()),
+        );
+
+        expect(
+          const None<int>().whereSync((value) => value == 3),
           equals(const None<int>()),
         );
       });
@@ -363,21 +601,33 @@ void main() {
         expect(const None<int>().whereType<bool>(), equals(const None<bool>()));
       });
 
-      test('zip', () {
+      test('zip', () async {
         expect(
-          const None<int>().zip((value) => Some('some: $value')),
+          await const None<int>().zip((value) => Some('some: $value')),
           equals(const None<Tuple2<int, String>>()),
         );
 
         expect(
-          const None<int>().zip((value) => const None<String>()),
+          await const None<int>().zip((value) => const None<String>()),
           equals(const None<Tuple2<int, String>>()),
         );
       });
 
-      test('zipWith', () {
+      test('zipSync', () {
         expect(
-          const None<int>().zipWith<bool, String>(
+          const None<int>().zipSync((value) => Some('some: $value')),
+          equals(const None<Tuple2<int, String>>()),
+        );
+
+        expect(
+          const None<int>().zipSync((value) => const None<String>()),
+          equals(const None<Tuple2<int, String>>()),
+        );
+      });
+
+      test('zipWith', () async {
+        expect(
+          await const None<int>().zipWith<bool, String>(
             (value) => Some(value == 2),
             (a, b) => '$a:$b',
           ),
@@ -385,7 +635,25 @@ void main() {
         );
 
         expect(
-          const None<int>().zipWith<bool, String>(
+          await const None<int>().zipWith<bool, String>(
+            (value) => const None<bool>(),
+            (a, b) => '$a:$b',
+          ),
+          equals(const None<String>()),
+        );
+      });
+
+      test('zipWithSync', () {
+        expect(
+          const None<int>().zipWithSync<bool, String>(
+            (value) => Some(value == 2),
+            (a, b) => '$a:$b',
+          ),
+          equals(const None<String>()),
+        );
+
+        expect(
+          const None<int>().zipWithSync<bool, String>(
             (value) => const None<bool>(),
             (a, b) => '$a:$b',
           ),
