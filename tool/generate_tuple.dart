@@ -56,7 +56,7 @@ String _variant(int n) {
       ///
       /// print(tuple); // "($values)"
       /// ```
-      const Tuple$n($params,) : super._();
+      const Tuple$n($params) : super._();
     }
   ''';
 }

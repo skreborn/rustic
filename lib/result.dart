@@ -5,8 +5,8 @@ import 'package:meta/meta.dart';
 
 import 'option.dart';
 
-/// Short-circuits the enclosing [Result.collect()] or [Result.collectSync()] if
-/// [result] is an [Err].
+/// Short-circuits the enclosing [Result.collect()] or [Result.collectSync()] if [result] is an
+/// [Err].
 typedef Checker<E> = T Function<T>(Result<T, E> result);
 
 /// Optionally maps an arbitrary exception [ex] to an [Err].
@@ -42,8 +42,8 @@ class _CheckException<T, E> implements Exception {
 /// }
 /// ```
 ///
-/// That function can now be used to try and parse an integer, and return with a
-/// helpful error in case of failure.
+/// That function can now be used to try and parse an integer, and return with a helpful error in
+/// case of failure.
 ///
 /// ```dart
 /// print(await tryParse('2')); // "Ok(2)"
@@ -72,8 +72,7 @@ abstract class Result<T, E> extends Equatable {
 
   /// Encloses any number of operations, optionally returning early on failure.
   ///
-  /// [collector] provides a [Checker] that allows for an early return in case
-  /// of a failure.
+  /// [collector] provides a [Checker] that allows for an early return in case of a failure.
   ///
   /// See [collectSync] for a synchronous version of this funcion.
   ///
@@ -112,8 +111,7 @@ abstract class Result<T, E> extends Equatable {
 
   /// Encloses any number of operations, optionally returning early on failure.
   ///
-  /// [collector] provides a [Checker] that allows for an early return in case
-  /// of a failure.
+  /// [collector] provides a [Checker] that allows for an early return in case of a failure.
   ///
   /// See [collect] for an asynchronous version of this funcion.
   ///
@@ -135,9 +133,7 @@ abstract class Result<T, E> extends Equatable {
   ///
   /// print(collected); // "Err(3)"
   /// ```
-  static Result<T, E> collectSync<T, E>(
-    Result<T, E> Function(Checker<E> check) collector,
-  ) {
+  static Result<T, E> collectSync<T, E>(Result<T, E> Function(Checker<E> check) collector) {
     try {
       return collector(<U>(result) {
         return result.matchSync(
@@ -152,8 +148,8 @@ abstract class Result<T, E> extends Equatable {
 
   /// Executes [fn] that might throw an [Exception].
   ///
-  /// [mapEx] optionally maps an [Exception] to an [Err]. Unhandled exceptions
-  /// are rethrown unchanged.
+  /// [mapEx] optionally maps an [Exception] to an [Err]. Unhandled exceptions are rethrown
+  /// unchanged.
   ///
   /// See [catchExceptionSync] for a synchronous version of this funcion.
   ///
@@ -191,8 +187,8 @@ abstract class Result<T, E> extends Equatable {
 
   /// Executes [fn] that might throw an [Exception].
   ///
-  /// [mapEx] optionally maps an [Exception] to an [Err]. Unhandled exceptions
-  /// are rethrown unchanged.
+  /// [mapEx] optionally maps an [Exception] to an [Err]. Unhandled exceptions are rethrown
+  /// unchanged.
   ///
   /// See [catchException] for an asynchronous version of this funcion.
   ///
@@ -211,10 +207,7 @@ abstract class Result<T, E> extends Equatable {
   ///
   /// print(caught); // "Err(fail: II)"
   /// ```
-  static Result<T, E> catchExceptionSync<T, E>(
-    T Function() fn,
-    ExceptionMapperSync<T, E> mapEx,
-  ) {
+  static Result<T, E> catchExceptionSync<T, E>(T Function() fn, ExceptionMapperSync<T, E> mapEx) {
     try {
       return Ok(fn());
     } on Exception catch (ex) {
@@ -375,10 +368,7 @@ abstract class Result<T, E> extends Equatable {
   /// ```dart
   /// print(await Err(2).match((_) => 'ok', (_) => 'err')); // "err"
   /// ```
-  Future<U> match<U>(
-    FutureOr<U> Function(T value) fOk,
-    FutureOr<U> Function(E error) fErr,
-  );
+  Future<U> match<U>(FutureOr<U> Function(T value) fOk, FutureOr<U> Function(E error) fErr);
 
   /// Applies mapping function [fOk] if `this` is an [Ok] and [fErr] otherwise.
   ///
@@ -427,8 +417,8 @@ abstract class Result<T, E> extends Equatable {
   ///
   /// # Throws
   ///
-  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is
-  /// an [Err] and [ifErr] is `null`.
+  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is an [Err] and
+  /// [ifErr] is `null`.
   ///
   /// # Examples
   ///
@@ -446,8 +436,8 @@ abstract class Result<T, E> extends Equatable {
   ///
   /// # Throws
   ///
-  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is
-  /// an [Err] and [ifErr] is `null`.
+  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is an [Err] and
+  /// [ifErr] is `null`.
   ///
   /// # Examples
   ///
@@ -465,8 +455,8 @@ abstract class Result<T, E> extends Equatable {
   ///
   /// # Throws
   ///
-  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is
-  /// an [Ok] and [ifOk] is `null`.
+  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is an [Ok] and [ifOk]
+  /// is `null`.
   ///
   /// # Examples
   ///
@@ -484,8 +474,8 @@ abstract class Result<T, E> extends Equatable {
   ///
   /// # Throws
   ///
-  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is
-  /// an [Ok] and [ifOk] is `null`.
+  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is an [Ok] and [ifOk]
+  /// is `null`.
   ///
   /// # Examples
   ///
@@ -497,8 +487,7 @@ abstract class Result<T, E> extends Equatable {
 
   /// Transforms the contained value, if any, by applying [map] to it.
   ///
-  /// If `this` is an [Err], and [ifErr] is not `null`, it is called to compute
-  /// a fallback value.
+  /// If `this` is an [Err], and [ifErr] is not `null`, it is called to compute a fallback value.
   ///
   /// See [mapSync] for a synchronous version of this funcion.
   ///
@@ -522,8 +511,7 @@ abstract class Result<T, E> extends Equatable {
 
   /// Transforms the contained value, if any, by applying [map] to it.
   ///
-  /// If `this` is an [Err], and [ifErr] is not `null`, it is called to compute
-  /// a fallback value.
+  /// If `this` is an [Err], and [ifErr] is not `null`, it is called to compute a fallback value.
   ///
   /// See [map] for an asynchronous version of this funcion.
   ///
@@ -544,8 +532,7 @@ abstract class Result<T, E> extends Equatable {
 
   /// Transforms the contained error, if any, by applying [map] to it.
   ///
-  /// If `this` is an [Ok], and [ifOk] is not `null`, it is called to compute a
-  /// fallback value.
+  /// If `this` is an [Ok], and [ifOk] is not `null`, it is called to compute a fallback value.
   ///
   /// See [mapErrSync] for a synchronous version of this funcion.
   ///
@@ -569,8 +556,7 @@ abstract class Result<T, E> extends Equatable {
 
   /// Transforms the contained error, if any, by applying [map] to it.
   ///
-  /// If `this` is an [Ok], and [ifOk] is not `null`, it is called to compute a
-  /// fallback value.
+  /// If `this` is an [Ok], and [ifOk] is not `null`, it is called to compute a fallback value.
   ///
   /// See [mapErr] for an asynchronous version of this funcion.
   ///
@@ -592,8 +578,7 @@ abstract class Result<T, E> extends Equatable {
     F Function(T value) ifOk,
   });
 
-  /// Returns the result of calling [other] if `this` is an [Ok], otherwise
-  /// [Err].
+  /// Returns the result of calling [other] if `this` is an [Ok], otherwise [Err].
   ///
   /// See [andSync] for a synchronous version of this funcion.
   ///
@@ -612,8 +597,7 @@ abstract class Result<T, E> extends Equatable {
   /// ```
   Future<Result<U, E>> and<U>(FutureOr<Result<U, E>> Function(T value) other);
 
-  /// Returns the result of calling [other] if `this` is an [Ok], otherwise
-  /// [Err].
+  /// Returns the result of calling [other] if `this` is an [Ok], otherwise [Err].
   ///
   /// See [and] for an asynchronous version of this funcion.
   ///
@@ -632,8 +616,7 @@ abstract class Result<T, E> extends Equatable {
   /// ```
   Result<U, E> andSync<U>(Result<U, E> Function(T value) other);
 
-  /// Returns [Ok] if `this` is an [Ok], otherwise the result of calling
-  /// [other].
+  /// Returns [Ok] if `this` is an [Ok], otherwise the result of calling [other].
   ///
   /// See [orSync] for a synchronous version of this funcion.
   ///
@@ -652,8 +635,7 @@ abstract class Result<T, E> extends Equatable {
   /// ```
   Future<Result<T, F>> or<F>(FutureOr<Result<T, F>> Function(E error) other);
 
-  /// Returns [Ok] if `this` is an [Ok], otherwise the result of calling
-  /// [other].
+  /// Returns [Ok] if `this` is an [Ok], otherwise the result of calling [other].
   ///
   /// See [or] for an asynchronous version of this funcion.
   ///
@@ -690,8 +672,8 @@ abstract class Result<T, E> extends Equatable {
 extension OkResult<T> on Result<T, Never> {
   /// Returns the contained value.
   ///
-  /// Unlike [Result.unwrap()], this method is known to never throw because the
-  /// error variant cannot possibly be instantiated.
+  /// Unlike [Result.unwrap()], this method is known to never throw because the error variant cannot
+  /// possibly be instantiated.
   ///
   /// # Examples
   ///
@@ -705,8 +687,8 @@ extension OkResult<T> on Result<T, Never> {
 extension ErrResult<E> on Result<Never, E> {
   /// Returns the contained error.
   ///
-  /// Unlike [Result.unwrapErr()], this method is known to never throw because
-  /// the success variant cannot possibly be instantiated.
+  /// Unlike [Result.unwrapErr()], this method is known to never throw because the success variant
+  /// cannot possibly be instantiated.
   ///
   /// # Examples
   ///
@@ -718,12 +700,11 @@ extension ErrResult<E> on Result<Never, E> {
 
 /// An extension on [Result] containing an [Option].
 extension ResultingOption<T, E> on Result<Option<T>, E> {
-  /// Transposes a [Result] containing an [Option] into an [Option] containing a
-  /// [Result].
+  /// Transposes a [Result] containing an [Option] into an [Option] containing a [Result].
   ///
-  /// An [Ok] with a [None] value will be mapped to a [None], and an [Ok] with a
-  /// [Some] value will be mapped to a [Some] with an [Ok] value. An [Err] will
-  /// be mapped to a [Some] with an [Err] value.
+  /// An [Ok] with a [None] value will be mapped to a [None], and an [Ok] with a [Some] value will
+  /// be mapped to a [Some] with an [Ok] value. An [Err] will be mapped to a [Some] with an [Err]
+  /// value.
   ///
   /// # Examples
   ///
@@ -794,10 +775,7 @@ class Ok<T, E> extends Result<T, E> {
   void whenErrSync(void Function(E error) fn) {}
 
   @override
-  Future<U> match<U>(
-    FutureOr<U> Function(T value) fOk,
-    FutureOr<U> Function(E error) fErr,
-  ) async {
+  Future<U> match<U>(FutureOr<U> Function(T value) fOk, FutureOr<U> Function(E error) fErr) async {
     return fOk(value);
   }
 
@@ -878,9 +856,7 @@ class Ok<T, E> extends Result<T, E> {
   }
 
   @override
-  Future<Result<U, E>> and<U>(
-    FutureOr<Result<U, E>> Function(T value) other,
-  ) async {
+  Future<Result<U, E>> and<U>(FutureOr<Result<U, E>> Function(T value) other) async {
     return other(value);
   }
 
@@ -888,9 +864,7 @@ class Ok<T, E> extends Result<T, E> {
   Result<U, E> andSync<U>(Result<U, E> Function(T value) other) => other(value);
 
   @override
-  Future<Result<T, F>> or<F>(
-    FutureOr<Result<T, F>> Function(E error) other,
-  ) async {
+  Future<Result<T, F>> or<F>(FutureOr<Result<T, F>> Function(E error) other) async {
     return Ok(value);
   }
 
@@ -943,10 +917,7 @@ class Err<T, E> extends Result<T, E> {
   void whenErrSync(void Function(E error) fn) => fn(error);
 
   @override
-  Future<U> match<U>(
-    FutureOr<U> Function(T value) fOk,
-    FutureOr<U> Function(E error) fErr,
-  ) async {
+  Future<U> match<U>(FutureOr<U> Function(T value) fOk, FutureOr<U> Function(E error) fErr) async {
     return fErr(error);
   }
 
@@ -1027,9 +998,7 @@ class Err<T, E> extends Result<T, E> {
   }
 
   @override
-  Future<Result<U, E>> and<U>(
-    FutureOr<Result<U, E>> Function(T value) other,
-  ) async {
+  Future<Result<U, E>> and<U>(FutureOr<Result<U, E>> Function(T value) other) async {
     return Err(error);
   }
 
@@ -1037,9 +1006,7 @@ class Err<T, E> extends Result<T, E> {
   Result<U, E> andSync<U>(Result<U, E> Function(T value) other) => Err(error);
 
   @override
-  Future<Result<T, F>> or<F>(
-    FutureOr<Result<T, F>> Function(E error) other,
-  ) async {
+  Future<Result<T, F>> or<F>(FutureOr<Result<T, F>> Function(E error) other) async {
     return other(error);
   }
 

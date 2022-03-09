@@ -39,10 +39,7 @@ class Tuple2<I0, I1> extends Tuple {
   ///
   /// print(tuple); // "(0, 1)"
   /// ```
-  const Tuple2(
-    this.i0,
-    this.i1,
-  ) : super._();
+  const Tuple2(this.i0, this.i1) : super._();
 }
 
 /// A [Tuple] of 3 items.
@@ -93,11 +90,7 @@ class Tuple3<I0, I1, I2> extends Tuple {
   ///
   /// print(tuple); // "(0, 1, 2)"
   /// ```
-  const Tuple3(
-    this.i0,
-    this.i1,
-    this.i2,
-  ) : super._();
+  const Tuple3(this.i0, this.i1, this.i2) : super._();
 }
 
 /// A [Tuple] of 4 items.
@@ -159,12 +152,7 @@ class Tuple4<I0, I1, I2, I3> extends Tuple {
   ///
   /// print(tuple); // "(0, 1, 2, 3)"
   /// ```
-  const Tuple4(
-    this.i0,
-    this.i1,
-    this.i2,
-    this.i3,
-  ) : super._();
+  const Tuple4(this.i0, this.i1, this.i2, this.i3) : super._();
 }
 
 /// A [Tuple] of 5 items.
@@ -237,13 +225,7 @@ class Tuple5<I0, I1, I2, I3, I4> extends Tuple {
   ///
   /// print(tuple); // "(0, 1, 2, 3, 4)"
   /// ```
-  const Tuple5(
-    this.i0,
-    this.i1,
-    this.i2,
-    this.i3,
-    this.i4,
-  ) : super._();
+  const Tuple5(this.i0, this.i1, this.i2, this.i3, this.i4) : super._();
 }
 
 /// A [Tuple] of 6 items.
@@ -327,14 +309,7 @@ class Tuple6<I0, I1, I2, I3, I4, I5> extends Tuple {
   ///
   /// print(tuple); // "(0, 1, 2, 3, 4, 5)"
   /// ```
-  const Tuple6(
-    this.i0,
-    this.i1,
-    this.i2,
-    this.i3,
-    this.i4,
-    this.i5,
-  ) : super._();
+  const Tuple6(this.i0, this.i1, this.i2, this.i3, this.i4, this.i5) : super._();
 }
 
 /// A [Tuple] of 7 items.
@@ -429,15 +404,7 @@ class Tuple7<I0, I1, I2, I3, I4, I5, I6> extends Tuple {
   ///
   /// print(tuple); // "(0, 1, 2, 3, 4, 5, 6)"
   /// ```
-  const Tuple7(
-    this.i0,
-    this.i1,
-    this.i2,
-    this.i3,
-    this.i4,
-    this.i5,
-    this.i6,
-  ) : super._();
+  const Tuple7(this.i0, this.i1, this.i2, this.i3, this.i4, this.i5, this.i6) : super._();
 }
 
 /// A [Tuple] of 8 items.
@@ -543,14 +510,5 @@ class Tuple8<I0, I1, I2, I3, I4, I5, I6, I7> extends Tuple {
   ///
   /// print(tuple); // "(0, 1, 2, 3, 4, 5, 6, 7)"
   /// ```
-  const Tuple8(
-    this.i0,
-    this.i1,
-    this.i2,
-    this.i3,
-    this.i4,
-    this.i5,
-    this.i6,
-    this.i7,
-  ) : super._();
+  const Tuple8(this.i0, this.i1, this.i2, this.i3, this.i4, this.i5, this.i6, this.i7) : super._();
 }

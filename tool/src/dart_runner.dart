@@ -21,15 +21,8 @@ abstract class DartCommand {
 
     final output = <String>[];
 
-    process.stdout
-        .transform(utf8.decoder)
-        .transform(const LineSplitter())
-        .listen(output.add);
-
-    process.stderr
-        .transform(utf8.decoder)
-        .transform(const LineSplitter())
-        .listen(output.add);
+    process.stdout.transform(utf8.decoder).transform(const LineSplitter()).listen(output.add);
+    process.stderr.transform(utf8.decoder).transform(const LineSplitter()).listen(output.add);
 
     return DartCommandResult(await process.exitCode, output);
   }

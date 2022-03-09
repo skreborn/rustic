@@ -24,9 +24,8 @@ import 'tuple.dart';
 /// }
 /// ```
 ///
-/// That function can now be used to try and multiply two integers encoded as
-/// strings and returning [None] if that operation is not possible due to a
-/// conversion error.
+/// That function can now be used to try and multiply two integers encoded as strings and returning
+/// [None] if that operation is not possible due to a conversion error.
 ///
 /// ```dart
 /// print(await multiply('2', '3')); // "Some(6)"
@@ -35,8 +34,7 @@ import 'tuple.dart';
 @sealed
 @immutable
 abstract class Option<T> extends Equatable {
-  /// Creates a [Some] with the given [value], if it is not `null`, or a [None]
-  /// otherwise.
+  /// Creates a [Some] with the given [value], if it is not `null`, or a [None] otherwise.
   ///
   /// # Examples
   ///
@@ -193,8 +191,7 @@ abstract class Option<T> extends Equatable {
   /// ```
   void whenNoneSync(void Function() fn);
 
-  /// Applies mapping function [fSome] if `this` is a [Some] and [fNone]
-  /// otherwise.
+  /// Applies mapping function [fSome] if `this` is a [Some] and [fNone] otherwise.
   ///
   /// See [matchSync] for a synchronous version of this funcion.
   ///
@@ -211,13 +208,9 @@ abstract class Option<T> extends Equatable {
   /// ```dart
   /// print(await None().match((_) => 'some', () => 'none')); // "none"
   /// ```
-  Future<U> match<U>(
-    FutureOr<U> Function(T value) fSome,
-    FutureOr<U> Function() fNone,
-  );
+  Future<U> match<U>(FutureOr<U> Function(T value) fSome, FutureOr<U> Function() fNone);
 
-  /// Applies mapping function [fSome] if `this` is a [Some] and [fNone]
-  /// otherwise.
+  /// Applies mapping function [fSome] if `this` is a [Some] and [fNone] otherwise.
   ///
   /// See [match] for an asynchronous version of this funcion.
   ///
@@ -244,8 +237,8 @@ abstract class Option<T> extends Equatable {
   ///
   /// # Throws
   ///
-  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is
-  /// a [None] and [ifNone] is `null`.
+  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is a [None] and
+  /// [ifNone] is `null`.
   ///
   /// # Examples
   ///
@@ -263,8 +256,8 @@ abstract class Option<T> extends Equatable {
   ///
   /// # Throws
   ///
-  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is
-  /// a [None] and [ifNone] is `null`.
+  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is a [None] and
+  /// [ifNone] is `null`.
   ///
   /// # Examples
   ///
@@ -278,8 +271,7 @@ abstract class Option<T> extends Equatable {
   ///
   /// # Throws
   ///
-  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is
-  /// a [Some].
+  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is a [Some].
   ///
   /// # Examples
   ///
@@ -291,8 +283,7 @@ abstract class Option<T> extends Equatable {
 
   /// Transforms the contained value, if any, by applying [map] to it.
   ///
-  /// If `this` is a [None], and [ifNone] is not `null`, it is called to compute
-  /// a fallback value.
+  /// If `this` is a [None], and [ifNone] is not `null`, it is called to compute a fallback value.
   ///
   /// See [mapSync] for a synchronous version of this funcion.
   ///
@@ -316,8 +307,7 @@ abstract class Option<T> extends Equatable {
 
   /// Transforms the contained value, if any, by applying [map] to it.
   ///
-  /// If `this` is a [None], and [ifNone] is not `null`, it is called to compute
-  /// a fallback value.
+  /// If `this` is a [None], and [ifNone] is not `null`, it is called to compute a fallback value.
   ///
   /// See [map] for an asynchronous version of this funcion.
   ///
@@ -336,8 +326,8 @@ abstract class Option<T> extends Equatable {
   /// ```
   Option<U> mapSync<U>(U Function(T value) map, {U Function() ifNone});
 
-  /// Transforms an [Option] into a [Result], mapping [Some] to [Ok] and [None]
-  /// to [Err] using [ifNone].
+  /// Transforms an [Option] into a [Result], mapping [Some] to [Ok] and [None] to [Err] using
+  /// [ifNone].
   ///
   /// See [okOrSync] for a synchronous version of this funcion.
   ///
@@ -349,8 +339,8 @@ abstract class Option<T> extends Equatable {
   /// ```
   Future<Result<T, E>> okOr<E>(FutureOr<E> Function() ifNone);
 
-  /// Transforms an [Option] into a [Result], mapping [Some] to [Ok] and [None]
-  /// to [Err] using [ifNone].
+  /// Transforms an [Option] into a [Result], mapping [Some] to [Ok] and [None] to [Err] using
+  /// [ifNone].
   ///
   /// See [okOr] for an asynchronous version of this funcion.
   ///
@@ -362,8 +352,7 @@ abstract class Option<T> extends Equatable {
   /// ```
   Result<T, E> okOrSync<E>(E Function() ifNone);
 
-  /// Returns the result of calling [other] if `this` is a [Some], otherwise
-  /// [None].
+  /// Returns the result of calling [other] if `this` is a [Some], otherwise [None].
   ///
   /// See [andSync] for a synchronous version of this funcion.
   ///
@@ -382,8 +371,7 @@ abstract class Option<T> extends Equatable {
   /// ```
   Future<Option<U>> and<U>(FutureOr<Option<U>> Function(T value) other);
 
-  /// Returns the result of calling [other] if `this` is a [Some], otherwise
-  /// [None].
+  /// Returns the result of calling [other] if `this` is a [Some], otherwise [None].
   ///
   /// See [and] for an asynchronous version of this funcion.
   ///
@@ -402,8 +390,7 @@ abstract class Option<T> extends Equatable {
   /// ```
   Option<U> andSync<U>(Option<U> Function(T value) other);
 
-  /// Returns `this` unchanged if `this` is a [Some], otherwise the result of
-  /// calling [other].
+  /// Returns `this` unchanged if `this` is a [Some], otherwise the result of calling [other].
   ///
   /// See [orSync] for a synchronous version of this funcion.
   ///
@@ -422,8 +409,7 @@ abstract class Option<T> extends Equatable {
   /// ```
   Future<Option<T>> or(FutureOr<Option<T>> Function() other);
 
-  /// Returns `this` unchanged if `this` is a [Some], otherwise the result of
-  /// calling [other].
+  /// Returns `this` unchanged if `this` is a [Some], otherwise the result of calling [other].
   ///
   /// See [or] for an asynchronous version of this funcion.
   ///
@@ -442,8 +428,8 @@ abstract class Option<T> extends Equatable {
   /// ```
   Option<T> orSync(Option<T> Function() other);
 
-  /// Returns `this` unchanged if either, but not both, of `this` and [other] is
-  /// a [Some], otherwise [None].
+  /// Returns `this` unchanged if either, but not both, of `this` and [other] is a [Some], otherwise
+  /// [None].
   ///
   /// # Examples
   ///
@@ -453,8 +439,7 @@ abstract class Option<T> extends Equatable {
   /// ```
   Option<T> xor(Option<T> other);
 
-  /// Returns `this` unchanged if `this` is a [Some] and satisfies [condition],
-  /// otherwise [None].
+  /// Returns `this` unchanged if `this` is a [Some] and satisfies [condition], otherwise [None].
   ///
   /// See [whereSync] for a synchronous version of this funcion.
   ///
@@ -466,8 +451,7 @@ abstract class Option<T> extends Equatable {
   /// ```
   Future<Option<T>> where(FutureOr<bool> Function(T value) condition);
 
-  /// Returns `this` unchanged if `this` is a [Some] and satisfies [condition],
-  /// otherwise [None].
+  /// Returns `this` unchanged if `this` is a [Some] and satisfies [condition], otherwise [None].
   ///
   /// See [where] for an asynchronous version of this funcion.
   ///
@@ -479,8 +463,7 @@ abstract class Option<T> extends Equatable {
   /// ```
   Option<T> whereSync(bool Function(T value) condition);
 
-  /// Returns [Some] if `this` is a [Some] with a value of type [U], otherwise
-  /// [None].
+  /// Returns [Some] if `this` is a [Some] with a value of type [U], otherwise [None].
   ///
   /// # Examples
   ///
@@ -490,8 +473,8 @@ abstract class Option<T> extends Equatable {
   /// ```
   Option<U> whereType<U>();
 
-  /// Returns [Some] with a [Tuple2] value if both `this` and the result of
-  /// calling [other] are [Some], otherwise [None].
+  /// Returns [Some] with a [Tuple2] value if both `this` and the result of calling [other] are
+  /// [Some], otherwise [None].
   ///
   /// See [zipSync] for a synchronous version of this funcion.
   ///
@@ -501,12 +484,10 @@ abstract class Option<T> extends Equatable {
   /// print(await Some(2).zip(Some('some')); // "Some(Tuple2(2, some))"
   /// print(await Some(2).zip(None()); // "None"
   /// ```
-  Future<Option<Tuple2<T, U>>> zip<U>(
-    FutureOr<Option<U>> Function(T value) other,
-  );
+  Future<Option<Tuple2<T, U>>> zip<U>(FutureOr<Option<U>> Function(T value) other);
 
-  /// Returns [Some] with a [Tuple2] value if both `this` and the result of
-  /// calling [other] are [Some], otherwise [None].
+  /// Returns [Some] with a [Tuple2] value if both `this` and the result of calling [other] are
+  /// [Some], otherwise [None].
   ///
   /// See [zip] for an asynchronous version of this funcion.
   ///
@@ -518,8 +499,8 @@ abstract class Option<T> extends Equatable {
   /// ```
   Option<Tuple2<T, U>> zipSync<U>(Option<U> Function(T value) other);
 
-  /// Returns [Some] with the result of calling [zipper] if both `this` and the
-  /// result of calling [other] are [Some], otherwise [None].
+  /// Returns [Some] with the result of calling [zipper] if both `this` and the result of calling
+  /// [other] are [Some], otherwise [None].
   ///
   /// See [zipWithSync] for a synchronous version of this funcion.
   ///
@@ -534,8 +515,8 @@ abstract class Option<T> extends Equatable {
     FutureOr<R> Function(T first, U second) zipper,
   );
 
-  /// Returns [Some] with the result of calling [zipper] if both `this` and the
-  /// result of calling [other] are [Some], otherwise [None].
+  /// Returns [Some] with the result of calling [zipper] if both `this` and the result of calling
+  /// [other] are [Some], otherwise [None].
   ///
   /// See [zipWith] for an asynchronous version of this funcion.
   ///
@@ -566,8 +547,7 @@ abstract class Option<T> extends Equatable {
 
 /// An extension on any nullable object.
 extension Optionable<T> on T? {
-  /// Creates a [Some] with `this` as its value, if it is not `null`, or a
-  /// [None] otherwise.
+  /// Creates a [Some] with `this` as its value, if it is not `null`, or a [None] otherwise.
   ///
   /// # Examples
   ///
@@ -580,12 +560,11 @@ extension Optionable<T> on T? {
 
 /// An extension on [Option] containing a [Result].
 extension OptionalResult<T, E> on Option<Result<T, E>> {
-  /// Transposes an [Option] containing a [Result] into a [Result] containing an
-  /// [Option].
+  /// Transposes an [Option] containing a [Result] into a [Result] containing an [Option].
   ///
-  /// A [None] will be mapped to an [Ok] with a [None] value. A [Some] with an
-  /// [Ok] value will be mapped to an [Ok] with a [Some] value, and a [Some]
-  /// with an [Err] value will be mapped to an [Err].
+  /// A [None] will be mapped to an [Ok] with a [None] value. A [Some] with an [Ok] value will be
+  /// mapped to an [Ok] with a [Some] value, and a [Some] with an [Err] value will be mapped to an
+  /// [Err].
   ///
   /// # Examples
   ///
@@ -659,10 +638,7 @@ class Some<T> extends Option<T> {
   void whenNoneSync(void Function() fn) {}
 
   @override
-  Future<U> match<U>(
-    FutureOr<U> Function(T value) fSome,
-    FutureOr<U> Function() fNone,
-  ) async {
+  Future<U> match<U>(FutureOr<U> Function(T value) fSome, FutureOr<U> Function() fNone) async {
     return fSome(value);
   }
 
@@ -738,9 +714,7 @@ class Some<T> extends Option<T> {
   Option<U> whereType<U>() => value is U ? Some(value as U) : None<U>();
 
   @override
-  Future<Option<Tuple2<T, U>>> zip<U>(
-    FutureOr<Option<U>> Function(T value) other,
-  ) async {
+  Future<Option<Tuple2<T, U>>> zip<U>(FutureOr<Option<U>> Function(T value) other) async {
     return (await other(value)).match(
       (otherValue) => Some(Tuple2(value, otherValue)),
       () => None<Tuple2<T, U>>(),
@@ -817,10 +791,7 @@ class None<T> extends Option<T> {
   void whenNoneSync(void Function() fn) => fn();
 
   @override
-  Future<U> match<U>(
-    FutureOr<U> Function(T value) fSome,
-    FutureOr<U> Function() fNone,
-  ) async {
+  Future<U> match<U>(FutureOr<U> Function(T value) fSome, FutureOr<U> Function() fNone) async {
     return fNone();
   }
 
@@ -898,9 +869,7 @@ class None<T> extends Option<T> {
   None<U> whereType<U>() => None<U>();
 
   @override
-  Future<None<Tuple2<T, U>>> zip<U>(
-    FutureOr<Option<U>> Function(T value) other,
-  ) async {
+  Future<None<Tuple2<T, U>>> zip<U>(FutureOr<Option<U>> Function(T value) other) async {
     return None<Tuple2<T, U>>();
   }
 

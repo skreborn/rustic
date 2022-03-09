@@ -27,9 +27,7 @@ void main() {
     });
 
     group('methods', () {
-      test('toString', () {
-        expect(const Tuple2(2, 'two').toString(), equals('(2, two)'));
-      });
+      test('toString', () => expect(const Tuple2(2, 'two').toString(), equals('(2, two)')));
     });
   });
 
@@ -42,34 +40,16 @@ void main() {
 
     group('operators', () {
       test('==', () {
-        expect(
-          const Tuple3(2, 'two', true) == const Tuple3(2, 'two', true),
-          isTrue,
-        );
-
-        expect(
-          const Tuple3(2, 'two', true) == const Tuple3(3, 'two', true),
-          isFalse,
-        );
-
-        expect(
-          const Tuple3(2, 'two', true) == const Tuple3(2, 'three', true),
-          isFalse,
-        );
-
-        expect(
-          const Tuple3(2, 'two', true) == const Tuple3(2, 'two', false),
-          isFalse,
-        );
+        expect(const Tuple3(2, 'two', true) == const Tuple3(2, 'two', true), isTrue);
+        expect(const Tuple3(2, 'two', true) == const Tuple3(3, 'two', true), isFalse);
+        expect(const Tuple3(2, 'two', true) == const Tuple3(2, 'three', true), isFalse);
+        expect(const Tuple3(2, 'two', true) == const Tuple3(2, 'two', false), isFalse);
       });
     });
 
     group('methods', () {
       test('toString', () {
-        expect(
-          const Tuple3(2, 'two', true).toString(),
-          equals('(2, two, true)'),
-        );
+        expect(const Tuple3(2, 'two', true).toString(), equals('(2, two, true)'));
       });
     });
   });
