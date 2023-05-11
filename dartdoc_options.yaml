@@ -2,4 +2,4 @@ dartdoc:
   favicon: doc/favicon.ico
   linkToSource:
     root: .
-    uriTemplate: https://github.com/skreborn/rustic/blob/v0.4.0/%f%#L%l%
+    uriTemplate: https://github.com/skreborn/rustic/blob/v0.5.0/%f%#L%l%

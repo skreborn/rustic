@@ -1,24 +1,13 @@
+/// Constructs related to results of operations.
+
 import 'dart:async';
 
-import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
 import 'option.dart';
 
-/// Short-circuits the enclosing [Result.collect()] or [Result.collectSync()] if [result] is an
-/// [Err].
-typedef Checker<E> = T Function<T>(Result<T, E> result);
-
-/// Optionally maps an arbitrary exception [ex] to an [Err].
-typedef ExceptionMapper<T, E> = FutureOr<Option<Err<T, E>>> Function(
-  Exception ex,
-);
-
-/// Optionally maps an arbitrary exception [ex] to an [Err].
-typedef ExceptionMapperSync<T, E> = Option<Err<T, E>> Function(Exception ex);
-
 @immutable
-class _CheckException<T, E> implements Exception {
+final class _CheckException<T, E> implements Exception {
   final Err<T, E> err;
 
   const _CheckException(this.err);
@@ -35,7 +24,7 @@ class _CheckException<T, E> implements Exception {
 /// If an error occurs during conversion, an [Err] is returned.
 ///
 /// ```dart
-/// Future<Result<int, String>> tryParse(String source) {
+/// Result<int, String> tryParse(String source) {
 ///   return Ok<int?, String>(int.tryParse(source)).and((value) {
 ///     return value == null ? Err('not a number: $source') : Ok(value);
 ///   });
@@ -46,18 +35,97 @@ class _CheckException<T, E> implements Exception {
 /// case of failure.
 ///
 /// ```dart
-/// print(await tryParse('2')); // "Ok(2)"
-/// print(await tryParse('two')); // "Err(not a number: two)"
+/// // prints "Ok(2)"
+/// print(tryParse('2'));
+///
+/// // prints "Err(not a number: two)"
+/// print(tryParse('two'));
 /// ```
-@sealed
 @immutable
-abstract class Result<T, E> extends Equatable {
+sealed class Result<T, E> {
+  /// Encloses any number of operations, optionally returning early on [Err].
+  ///
+  /// See [collectAsync] for an asynchronous version of this function.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// final collected = Result.collect<int, String>((check) {
+  ///   // This passes the check and `first` gets the value `2`
+  ///   final first = check(Ok(2));
+  ///
+  ///   // This fails the check and the error is returned from the collector
+  ///   final second = check(Err('error'));
+  ///
+  ///   // This is never reached
+  ///   return Ok(first + second);
+  /// });
+  ///
+  /// // prints "Err(error)"
+  /// print(collected);
+  /// ```
+  @useResult
+  static Result<T, E> collect<T, E>(
+    Result<T, E> Function(T Function(Result<T, E> result) check) collector,
+  ) {
+    try {
+      return collector((result) {
+        return switch (result) {
+          Ok(:final value) => value,
+          Err(:final error) => throw _CheckException<T, E>(Err(error))
+        };
+      });
+    } on _CheckException<T, E> catch (ex) {
+      return ex.err;
+    }
+  }
+
+  /// Encloses any number of operations, optionally returning early on [Err].
+  ///
+  /// See [collect] for a synchronous version of this function.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// final collected = await Result.collectAsync<int, String>((check) async {
+  ///   // This passes the check and `first` gets the value `2`
+  ///   final first = check(await Future.value(Ok(2)));
+  ///
+  ///   // This fails the check and the error is returned from the collector
+  ///   final second = check(await Future.value(Err('error')));
+  ///
+  ///   // This is never reached
+  ///   return Ok(first + second);
+  /// });
+  ///
+  /// // prints "Err(error)"
+  /// print(collected);
+  /// ```
+  @useResult
+  static Future<Result<T, E>> collectAsync<T, E>(
+    FutureOr<Result<T, E>> Function(T Function(Result<T, E> result) check) collector,
+  ) async {
+    try {
+      return await collector((result) {
+        return switch (result) {
+          Ok(:final value) => value,
+          Err(:final error) => throw _CheckException<T, E>(Err(error))
+        };
+      });
+    } on _CheckException<T, E> catch (error) {
+      return error.err;
+    }
+  }
+
+  const Result._();
+
   /// Creates an [Ok] with the given [value].
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Result.ok(2)); // "Ok(2)"
+  /// // prints "Ok(2)"
+  /// print(Result<int, String>.ok(2));
   /// ```
   const factory Result.ok(T value) = Ok<T, E>;
 
@@ -66,337 +134,79 @@ abstract class Result<T, E> extends Equatable {
   /// # Examples
   ///
   /// ```dart
-  /// print(Result.err(2)); // "Err(2)"
+  /// // prints "Err(error)"
+  /// print(Result<int, String>.err('error'));
   /// ```
   const factory Result.err(E error) = Err<T, E>;
 
-  /// Encloses any number of operations, optionally returning early on failure.
-  ///
-  /// [collector] provides a [Checker] that allows for an early return in case of a failure.
-  ///
-  /// See [collectSync] for a synchronous version of this funcion.
+  /// Whether `this` is an [Ok].
   ///
   /// # Examples
   ///
   /// ```dart
-  /// final collected = await Result.collect<int, String>((check) async {
-  ///   String mapErr(int error) => error.toString();
+  /// // prints "true"
+  /// print(Ok<int, String>(2).isOk);
   ///
-  ///   // This passes the check and `first` gets the value `2`
-  ///   final first = check(await Ok<int, int>(2).mapErr(mapErr));
-  ///
-  ///   // This fails the check and the error is returned from the collector
-  ///   final second = check(await Err<int, int>(3).mapErr(mapErr));
-  ///
-  ///   // This is never reached
-  ///   return Ok(first + second);
-  /// });
-  ///
-  /// print(collected); // "Err(3)"
+  /// // prints "false"
+  /// print(Err<int, String>('error').isOk);
   /// ```
-  static Future<Result<T, E>> collect<T, E>(
-    FutureOr<Result<T, E>> Function(Checker<E> check) collector,
-  ) async {
-    try {
-      return await collector(<U>(result) {
-        return result.matchSync(
-          (value) => value,
-          (error) => throw _CheckException<T, E>(Err(error)),
-        );
-      });
-    } on _CheckException<T, E> catch (error) {
-      return error.err;
-    }
-  }
+  @useResult
+  bool get isOk;
 
-  /// Encloses any number of operations, optionally returning early on failure.
-  ///
-  /// [collector] provides a [Checker] that allows for an early return in case of a failure.
-  ///
-  /// See [collect] for an asynchronous version of this funcion.
+  /// Returns `true` if `this` is an [Ok] with a contained value that satisfies [condition].
   ///
   /// # Examples
   ///
   /// ```dart
-  /// final collected = Result.collectSync<int, String>((check) {
-  ///   String mapErr(int error) => error.toString();
+  /// // prints "true"
+  /// print(Ok<int, String>(2).isOkAnd((value) => value == 2));
   ///
-  ///   // This passes the check and `first` gets the value `2`
-  ///   final first = check(Ok<int, int>(2).mapErrSync(mapErr));
-  ///
-  ///   // This fails the check and the error is returned from the collector
-  ///   final second = check(Err<int, int>(3).mapErrSync(mapErr));
-  ///
-  ///   // This is never reached
-  ///   return Ok(first + second);
-  /// });
-  ///
-  /// print(collected); // "Err(3)"
+  /// // prints "false"
+  /// print(Err<int, String>('error').isOkAnd((value) => value == 2));
   /// ```
-  static Result<T, E> collectSync<T, E>(Result<T, E> Function(Checker<E> check) collector) {
-    try {
-      return collector(<U>(result) {
-        return result.matchSync(
-          (value) => value,
-          (error) => throw _CheckException<T, E>(Err(error)),
-        );
-      });
-    } on _CheckException<T, E> catch (error) {
-      return error.err;
-    }
-  }
+  @useResult
+  bool isOkAnd(bool Function(T value) condition);
 
-  /// Executes [fn] that might throw an [Exception].
-  ///
-  /// [mapEx] optionally maps an [Exception] to an [Err]. Unhandled exceptions are rethrown
-  /// unchanged.
-  ///
-  /// See [catchExceptionSync] for a synchronous version of this funcion.
+  /// Whether `this` is an [Err].
   ///
   /// # Examples
   ///
   /// ```dart
-  /// final caught = await Result.catchException<int, String>(() {
-  ///   return int.parse('II');
-  /// }, (ex) {
-  ///   if (ex is FormatException) {
-  ///     return Some(Err('fail: ${ex.source}'));
-  ///   }
+  /// // prints "false"
+  /// print(Ok<int, String>(2).isErr);
   ///
-  ///   return None();
-  /// });
-  ///
-  /// print(caught); // "Err(fail: II)"
+  /// // prints "true"
+  /// print(Err<int, String>().isErr);
   /// ```
-  static Future<Result<T, E>> catchException<T, E>(
-    FutureOr<T> Function() fn,
-    ExceptionMapper<T, E> mapEx,
-  ) async {
-    try {
-      return Ok(await fn());
-    } on Exception catch (ex) {
-      final result = await mapEx(ex);
+  @useResult
+  bool get isErr;
 
-      if (result is Some<Err<T, E>>) {
-        return result.value;
-      }
-
-      rethrow;
-    }
-  }
-
-  /// Executes [fn] that might throw an [Exception].
-  ///
-  /// [mapEx] optionally maps an [Exception] to an [Err]. Unhandled exceptions are rethrown
-  /// unchanged.
-  ///
-  /// See [catchException] for an asynchronous version of this funcion.
+  /// Returns `true` if `this` is an [Err] with a contained error that satisfies [condition].
   ///
   /// # Examples
   ///
   /// ```dart
-  /// final caught = Result.catchExceptionSync<int, String>(() {
-  ///   return int.parse('II');
-  /// }, (ex) {
-  ///   if (ex is FormatException) {
-  ///     return Some(Err('fail: ${ex.source}'));
-  ///   }
+  /// // prints "false"
+  /// print(Ok<int, String>(2).isErrAnd((value) => value == 'error'));
   ///
-  ///   return None();
-  /// });
-  ///
-  /// print(caught); // "Err(fail: II)"
+  /// // prints "true"
+  /// print(Err<int, String>('error').isErrAnd((value) => value == 'error'));
   /// ```
-  static Result<T, E> catchExceptionSync<T, E>(T Function() fn, ExceptionMapperSync<T, E> mapEx) {
-    try {
-      return Ok(fn());
-    } on Exception catch (ex) {
-      final result = mapEx(ex);
-
-      if (result is Some<Err<T, E>>) {
-        return result.value;
-      }
-
-      rethrow;
-    }
-  }
-
-  const Result._();
-
-  /// `true` if `this` is an [Ok].
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// print(Ok(2).isOk); // "true"
-  /// print(Err(2).isOk); // "false"
-  /// ```
-  bool get isOk => this is Ok;
-
-  /// True if `this` is an [Err].
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// print(Ok(2).isErr); // "false"
-  /// print(Err(2).isErr); // "true"
-  /// ```
-  bool get isErr => this is Err;
-
-  /// Returns an iterable over the possibly contained value.
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// print(Ok(2).iterable.length); // "1"
-  /// print(Err(2).iterable.length); // "0"
-  /// ```
-  Iterable<T> get iterable;
-
-  /// Returns `true` if `this` is an [Ok] with the given [value].
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// print(Ok(2).contains(2)); // "true"
-  /// print(Ok(2).contains(3)); // "false"
-  /// print(Err(2).contains(2)); // "false"
-  /// ```
-  bool contains(T value) => this == Ok<T, E>(value);
-
-  /// Returns `true` if `this` is an [Err] with the given [error].
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// print(Err(2).containsErr(2)); // "true"
-  /// print(Err(2).containsErr(3)); // "false"
-  /// print(Ok(2).containsErr(2)); // "false"
-  /// ```
-  bool containsErr(E error) => this == Err<T, E>(error);
-
-  /// Executes [fn] if `this` is an [Ok].
-  ///
-  /// See [whenOkSync] for a synchronous version of this funcion.
-  ///
-  /// # Examples
-  ///
-  /// For an [Ok], [fn] is called with the contained value.
-  ///
-  /// ```dart
-  /// await Ok(2).whenOk((_) => print('ok')); // "ok"
-  /// ```
-  ///
-  /// For an [Err], [fn] is never called.
-  ///
-  /// ```dart
-  /// await Err(2).whenOk((_) => print('ok')); // Outputs nothing
-  /// ```
-  Future<void> whenOk(FutureOr<void> Function(T value) fn);
-
-  /// Executes [fn] if `this` is an [Ok].
-  ///
-  /// See [whenOk] for an asynchronous version of this funcion.
-  ///
-  /// # Examples
-  ///
-  /// For an [Ok], [fn] is called with the contained value.
-  ///
-  /// ```dart
-  /// Ok(2).whenOkSync((_) => print('ok')); // "ok"
-  /// ```
-  ///
-  /// For an [Err], [fn] is never called.
-  ///
-  /// ```dart
-  /// Err(2).whenOkSync((_) => print('ok')); // Outputs nothing
-  /// ```
-  void whenOkSync(void Function(T value) fn);
-
-  /// Executes [fn] if `this` is an [Err].
-  ///
-  /// See [whenErrSync] for a synchronous version of this funcion.
-  ///
-  /// # Examples
-  ///
-  /// For an [Ok], [fn] is never called.
-  ///
-  /// ```dart
-  /// await Ok(2).whenErr((_) => print('err')); // Outputs nothing
-  /// ```
-  ///
-  /// For an [Err], [fn] is called with the contained error.
-  ///
-  /// ```dart
-  /// await Err(2).whenErr((_) => print('err')); // "err"
-  /// ```
-  Future<void> whenErr(FutureOr<void> Function(E error) fn);
-
-  /// Executes [fn] if `this` is an [Err].
-  ///
-  /// See [whenErr] for an asynchronous version of this funcion.
-  ///
-  /// # Examples
-  ///
-  /// For an [Ok], [fn] is never called.
-  ///
-  /// ```dart
-  /// Ok(2).whenErrSync((_) => print('err')); // Outputs nothing
-  /// ```
-  ///
-  /// For an [Err], [fn] is called with the contained error.
-  ///
-  /// ```dart
-  /// Err(2).whenErrSync((_) => print('err')); // "err"
-  /// ```
-  void whenErrSync(void Function(E error) fn);
-
-  /// Applies mapping function [fOk] if `this` is an [Ok] and [fErr] otherwise.
-  ///
-  /// See [matchSync] for a synchronous version of this funcion.
-  ///
-  /// # Examples
-  ///
-  /// For an [Ok], [fOk] is called with the contained value.
-  ///
-  /// ```dart
-  /// print(await Ok(2).match((_) => 'ok', (_) => 'err')); // "ok"
-  /// ```
-  ///
-  /// For an [Err], [fErr] is called with the contained error.
-  ///
-  /// ```dart
-  /// print(await Err(2).match((_) => 'ok', (_) => 'err')); // "err"
-  /// ```
-  Future<U> match<U>(FutureOr<U> Function(T value) fOk, FutureOr<U> Function(E error) fErr);
-
-  /// Applies mapping function [fOk] if `this` is an [Ok] and [fErr] otherwise.
-  ///
-  /// See [match] for an asynchronous version of this funcion.
-  ///
-  /// # Examples
-  ///
-  /// For an [Ok], [fOk] is called with the contained value.
-  ///
-  /// ```dart
-  /// print(Ok(2).matchSync((_) => 'ok', (_) => 'err')); // "ok"
-  /// ```
-  ///
-  /// For an [Err], [fErr] is called with the contained error.
-  ///
-  /// ```dart
-  /// print(Err(2).matchSync((_) => 'ok', (_) => 'err')); // "err"
-  /// ```
-  U matchSync<U>(U Function(T value) fOk, U Function(E error) fErr);
+  @useResult
+  bool isErrAnd(bool Function(E error) condition);
 
   /// The possibly contained value.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Ok(2).ok); // "Some(2)"
-  /// print(Err(2).ok); // "None"
+  /// // prints "Some(2)"
+  /// print(Ok<int, String>(2).ok);
+  ///
+  /// // prints "None"
+  /// print(Err<int, String>('error').ok);
   /// ```
+  @useResult
   Option<T> get ok;
 
   /// The possibly contained error.
@@ -404,303 +214,402 @@ abstract class Result<T, E> extends Equatable {
   /// # Examples
   ///
   /// ```dart
-  /// print(Ok(2).err); // "None"
-  /// print(Err(2).err); // "Some(2)"
+  /// // prints "None"
+  /// print(Ok<int, String>(2).err);
+  ///
+  /// // prints "Some(error)"
+  /// print(Err<int, String>('error').err);
   /// ```
+  @useResult
   Option<E> get err;
 
-  /// Returns the contained value.
-  ///
-  /// If `this` is an [Err], [ifErr] is called to compute a fallback value.
-  ///
-  /// See [unwrapSync] for a synchronous version of this funcion.
-  ///
-  /// # Throws
-  ///
-  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is an [Err] and
-  /// [ifErr] is `null`.
+  /// The contained value if `this` is an [Ok], or `null` otherwise.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(await Ok(2).unwrap()); // "2"
-  /// print(await Err(2).unwrap()); // Throws a `StateError`
+  /// // prints "2"
+  /// print(Ok<int, String>(2).valueOrNull);
+  ///
+  /// // prints "null"
+  /// print(Err<int, String>('error').valueOrNull);
   /// ```
-  Future<T> unwrap({String msg, FutureOr<T> Function(E error) ifErr});
+  @useResult
+  T? get valueOrNull;
+
+  /// The contained error if `this` is an [Err], or `null` otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "null"
+  /// print(Ok<int, String>(2).errorOrNull);
+  ///
+  /// // prints "error"
+  /// print(Err<int, String>('error').errorOrNull);
+  /// ```
+  @useResult
+  E? get errorOrNull;
+
+  /// Returns an iterable over the possibly contained value.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "[2]"
+  /// print(Ok<int, String>(2).iterable.toList());
+  ///
+  /// // prints "[]"
+  /// print(Err<int, String>('error').iterable.toList());
+  /// ```
+  @useResult
+  Iterable<T> get iterable;
+
+  /// Returns `true` if `this` is an [Ok] with the given [value].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "true"
+  /// print(Ok<int, String>(2).contains(2));
+  ///
+  /// // prints "false"
+  /// print(Err<int, String>('error').contains(2));
+  /// ```
+  @useResult
+  bool contains(T value);
+
+  /// Returns `true` if `this` is an [Err] with the given [error].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "false"
+  /// print(Ok<int, String>(2).containsErr('error'));
+  ///
+  /// // prints "true"
+  /// print(Err<int, String>('error').containsErr('error'));
+  /// ```
+  @useResult
+  bool containsErr(E error);
 
   /// Returns the contained value.
   ///
-  /// If `this` is an [Err], [ifErr] is called to compute a fallback value.
-  ///
-  /// See [unwrap] for an asynchronous version of this funcion.
-  ///
   /// # Throws
   ///
-  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is an [Err] and
-  /// [ifErr] is `null`.
+  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is an [Err].
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Ok(2).unwrapSync()); // "2"
-  /// print(Err(2).unwrapSync()); // Throws a `StateError`
+  /// // prints "2"
+  /// print(Ok<int, String>(2).unwrap());
+  ///
+  /// // throws a `StateError`
+  /// print(Err<int, String>('error').unwrap());
   /// ```
-  T unwrapSync({String msg, T Function(E error) ifErr});
+  @useResult
+  T unwrap({String? msg});
+
+  /// Returns the contained value, if any, or [defaultValue] otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "2"
+  /// print(Ok<int, String>(2).unwrapOr(3));
+  ///
+  /// // prints "3"
+  /// print(Err<int, String>('error').unwrapOr(3));
+  /// ```
+  @useResult
+  T unwrapOr(T defaultValue);
+
+  /// Returns the contained value, if any, or the result of [calculateDefaultValue] otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "2"
+  /// print(Ok<int, String>(2).unwrapOrElse((_) => 3));
+  ///
+  /// // prints "3"
+  /// print(Err<int, String>('error').unwrapOrElse((_) => 3));
+  /// ```
+  @useResult
+  T unwrapOrElse(T Function(E error) calculateDefaultValue);
 
   /// Returns the contained error.
   ///
-  /// If `this` is an [Ok], [ifOk] is called to compute a fallback value.
-  ///
-  /// See [unwrapErr] for a synchronous version of this funcion.
-  ///
   /// # Throws
   ///
-  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is an [Ok] and [ifOk]
-  /// is `null`.
+  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is an [Err].
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(await Ok(2).unwrapErr()); // Throws a `StateError`
-  /// print(await Err(2).unwrapErr()); // "2"
+  /// // throws a `StateError`
+  /// print(Ok<int, String>(2).unwrapErr());
+  ///
+  /// // prints "error"
+  /// print(Err<int, String>('error').unwrapErr());
   /// ```
-  Future<E> unwrapErr({String msg, FutureOr<E> Function(T value) ifOk});
+  @useResult
+  E unwrapErr({String? msg});
 
-  /// Returns the contained error.
-  ///
-  /// If `this` is an [Ok], [ifOk] is called to compute a fallback value.
-  ///
-  /// See [unwrapErr] for an asynchronous version of this funcion.
-  ///
-  /// # Throws
-  ///
-  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is an [Ok] and [ifOk]
-  /// is `null`.
+  /// Returns the contained error, if any, or [defaultError] otherwise.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Ok(2).unwrapErrSync()); // Throws a `StateError`
-  /// print(Err(2).unwrapErrSync()); // "2"
+  /// // prints "other"
+  /// print(Ok<int, String>(2).unwrapErrOr('other'));
+  ///
+  /// // prints "error"
+  /// print(Err<int, String>('error').unwrapErrOr('other'));
   /// ```
-  E unwrapErrSync({String msg, E Function(T value) ifOk});
+  @useResult
+  E unwrapErrOr(E defaultError);
+
+  /// Returns the contained error, if any, or the result of [calculateDefaultError] otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "other"
+  /// print(Ok<int, String>(2).unwrapErrOrElse((_) => 'other'));
+  ///
+  /// // prints "error"
+  /// print(Err<int, String>('error').unwrapErrOrElse((_) => 'other'));
+  /// ```
+  @useResult
+  E unwrapErrOrElse(E Function(T value) calculateDefaultError);
+
+  /// Calls [inspect] with the contained value if `this` is an [Ok].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "2"
+  /// Ok<int, String>(2).inspect((value) => print(value)));
+  ///
+  /// // prints nothing
+  /// Err<int, String>('error').inspect((value) => print(value)));
+  /// ```
+  @useResult
+  Result<T, E> inspect(void Function(T value) inspect);
+
+  /// Calls [inspect] with the contained error if `this` is an [Err].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints nothing
+  /// Ok<int, String>(2).inspectErr((error) => print(error)));
+  ///
+  /// // prints "error"
+  /// Err<int, String>('error').inspectErr((error) => print(error)));
+  /// ```
+  @useResult
+  Result<T, E> inspectErr(void Function(E error) inspect);
 
   /// Transforms the contained value, if any, by applying [map] to it.
   ///
-  /// If `this` is an [Err], and [ifErr] is not `null`, it is called to compute a fallback value.
-  ///
-  /// See [mapSync] for a synchronous version of this funcion.
-  ///
   /// # Examples
   ///
-  /// For an [Ok], [map] is called with the contained value.
-  ///
   /// ```dart
-  /// print(await Ok(2).map((_) => 'ok')); // "Ok(ok)"
-  /// ```
+  /// // prints "Ok(4)"
+  /// print(Ok<int, String>(2).map((value) => value * 2));
   ///
-  /// For an [Err], [map] is never called.
-  ///
-  /// ```dart
-  /// print(await Err(2).map((_) => 'ok')); // "Err(2)"
+  /// // prints "Err(error)"
+  /// print(Err<int, String>('error').map((value) => value * 2));
   /// ```
-  Future<Result<U, E>> map<U>(
-    FutureOr<U> Function(T value) map, {
-    FutureOr<U> Function(E error) ifErr,
-  });
+  @useResult
+  Result<U, E> map<U>(U Function(T value) map);
 
-  /// Transforms the contained value, if any, by applying [map] to it.
-  ///
-  /// If `this` is an [Err], and [ifErr] is not `null`, it is called to compute a fallback value.
-  ///
-  /// See [map] for an asynchronous version of this funcion.
+  /// Returns the contained value, if any, with [map] applied to it, or [defaultValue] otherwise.
   ///
   /// # Examples
   ///
-  /// For an [Ok], [map] is called with the contained value.
+  /// ```dart
+  /// // prints "4"
+  /// print(Ok<int, String>(2).mapOr((value) => value * 2), 0);
+  ///
+  /// // prints "0"
+  /// print(Err<int, String>('error').mapOr((value) => value * 2), 0);
+  /// ```
+  @useResult
+  U mapOr<U>(U Function(T value) map, U defaultValue);
+
+  /// Returns the contained value, if any, with [map] applied to it, or the result of
+  /// [calculateDefaultValue] otherwise.
+  ///
+  /// # Examples
   ///
   /// ```dart
-  /// print(Ok(2).mapSync((_) => 'ok')); // "Ok(ok)"
-  /// ```
+  /// // prints "4"
+  /// print(Ok<int, String>(2).mapOrElse((value) => value * 2), (_) => 0);
   ///
-  /// For an [Err], [map] is never called.
-  ///
-  /// ```dart
-  /// print(Err(2).mapSync((_) => 'ok')); // "Err(2)"
+  /// // prints "0"
+  /// print(Err<int, String>('error').mapOrElse((value) => value * 2), (_) => 0);
   /// ```
-  Result<U, E> mapSync<U>(U Function(T value) map, {U Function(E error) ifErr});
+  @useResult
+  U mapOrElse<U>(U Function(T value) map, U Function(E error) calculateDefaultValue);
 
   /// Transforms the contained error, if any, by applying [map] to it.
   ///
-  /// If `this` is an [Ok], and [ifOk] is not `null`, it is called to compute a fallback value.
-  ///
-  /// See [mapErrSync] for a synchronous version of this funcion.
-  ///
   /// # Examples
   ///
-  /// For an [Ok], [map] is never called.
-  ///
   /// ```dart
-  /// print(await Ok(2).mapErr((_) => 'err')); // "Ok(2)"
-  /// ```
+  /// // prints "Ok(2)"
+  /// print(Ok<int, String>(2).mapErr((error) => '$error!'));
   ///
-  /// For an [Err], [map] is called with the contained error.
-  ///
-  /// ```dart
-  /// print(await Err(2).mapErr((_) => 'err')); // "Err('err')"
+  /// // prints "Err(error!)"
+  /// print(Err<int, String>('error').mapErr((error) => '$error!'));
   /// ```
-  Future<Result<T, F>> mapErr<F>(
-    FutureOr<F> Function(E error) map, {
-    FutureOr<F> Function(T value) ifOk,
-  });
+  @useResult
+  Result<T, F> mapErr<F>(F Function(E error) map);
 
-  /// Transforms the contained error, if any, by applying [map] to it.
-  ///
-  /// If `this` is an [Ok], and [ifOk] is not `null`, it is called to compute a fallback value.
-  ///
-  /// See [mapErr] for an asynchronous version of this funcion.
+  /// Returns the contained error, if any, with [map] applied to it, or [defaultError] otherwise.
   ///
   /// # Examples
   ///
-  /// For an [Ok], [map] is never called.
-  ///
   /// ```dart
-  /// print(Ok(2).mapErrSync((_) => 'err')); // "Ok(2)"
-  /// ```
+  /// // prints "4"
+  /// print(Ok<int, String>(2).mapErrOr((error) => '$error!'), 'other');
   ///
-  /// For an [Err], [map] is called with the contained error.
-  ///
-  /// ```dart
-  /// print(Err(2).mapErrSync((_) => 'err')); // "Err('err')"
+  /// // prints "0"
+  /// print(Err<int, String>('error').mapErrOr((error) => '$error!'), 'other');
   /// ```
-  Result<T, F> mapErrSync<F>(
-    F Function(E error) map, {
-    F Function(T value) ifOk,
-  });
+  @useResult
+  F mapErrOr<F>(F Function(E error) map, F defaultError);
 
-  /// Returns the result of calling [other] if `this` is an [Ok], otherwise [Err].
-  ///
-  /// See [andSync] for a synchronous version of this funcion.
+  /// Returns the contained error, if any, with [map] applied to it, or the result of
+  /// [calculateDefaultError] otherwise.
   ///
   /// # Examples
   ///
-  /// For an [Ok], [other] is called with the contained value.
-  ///
   /// ```dart
-  /// print(await Ok(2).and((_) => Ok(3)); // "Ok(3)"
-  /// ```
+  /// // prints "4"
+  /// print(Ok<int, String>(2).mapErrOrElse((error) => '$error!'), (_) => 'other');
   ///
-  /// For an [Err], [other] is never called.
-  ///
-  /// ```dart
-  /// print(await Err(2).and((_) => Ok(3)); // "Err(2)"
+  /// // prints "0"
+  /// print(Err<int, String>('error').mapErrOrElse((error) => '$error!'), (_) => 'other');
   /// ```
-  Future<Result<U, E>> and<U>(FutureOr<Result<U, E>> Function(T value) other);
+  @useResult
+  F mapErrOrElse<F>(F Function(E error) map, F Function(T value) calculateDefaultError);
 
-  /// Returns the result of calling [other] if `this` is an [Ok], otherwise [Err].
-  ///
-  /// See [and] for an asynchronous version of this funcion.
+  /// Returns [other] if `this` is an [Ok], or an [Err] of the original error otherwise.
   ///
   /// # Examples
   ///
-  /// For an [Ok], [other] is called with the contained value.
-  ///
   /// ```dart
-  /// print(Ok(2).andSync((_) => Ok(3)); // "Ok(3)"
-  /// ```
+  /// // prints "Ok(3)"
+  /// print(Ok<int, String>(2).and(Ok(3)));
   ///
-  /// For an [Err], [other] is never called.
-  ///
-  /// ```dart
-  /// print(Err(2).andSync((_) => Ok(3)); // "Err(2)"
+  /// // prints "Err(error)"
+  /// print(Err<int, String>('error').and(Ok(3)));
   /// ```
-  Result<U, E> andSync<U>(Result<U, E> Function(T value) other);
+  @useResult
+  Result<U, E> and<U>(Result<U, E> other);
 
-  /// Returns [Ok] if `this` is an [Ok], otherwise the result of calling [other].
-  ///
-  /// See [orSync] for a synchronous version of this funcion.
+  /// Returns the result of [calculateOther] if `this` is an [Ok], or an [Err] of the original error
+  /// otherwise.
   ///
   /// # Examples
   ///
-  /// For an [Ok], [other] is never called.
-  ///
   /// ```dart
-  /// print(await Ok(2).or((_) => Ok(3)); // "Ok(2)"
-  /// ```
+  /// // prints "Ok(3)"
+  /// print(Ok<int, String>(2).andThen((value) => Ok(3)));
   ///
-  /// For an [Err], [other] is called with the contained error.
-  ///
-  /// ```dart
-  /// print(await Err(2).or((_) => Ok(3)); // "Ok(3)"
+  /// // prints "Err(error)"
+  /// print(Err<int, String>('error').andThen((value) => Ok(3)));
   /// ```
-  Future<Result<T, F>> or<F>(FutureOr<Result<T, F>> Function(E error) other);
+  @useResult
+  Result<U, E> andThen<U>(Result<U, E> Function(T value) calculateOther);
 
-  /// Returns [Ok] if `this` is an [Ok], otherwise the result of calling [other].
-  ///
-  /// See [or] for an asynchronous version of this funcion.
+  /// Returns an [Ok] of the original value if `this` is an [Ok], or [other] otherwise.
   ///
   /// # Examples
   ///
-  /// For an [Ok], [other] is never called.
+  /// ```dart
+  /// // prints "Ok(2)"
+  /// print(Ok<int, String>(2).or(Ok(3)));
+  ///
+  /// // prints "Ok(3)"
+  /// print(Err<int, String>('error').or(Ok(3)));
+  /// ```
+  @useResult
+  Result<T, F> or<F>(Result<T, F> other);
+
+  /// Returns an [Ok] of the original value if `this` is an [Ok], or the result of [calculateOther]
+  /// otherwise.
+  ///
+  /// # Examples
   ///
   /// ```dart
-  /// print(Ok(2).orSync((_) => Ok(3)); // "Ok(2)"
-  /// ```
+  /// // prints "Ok(2)"
+  /// print(Ok<int, String>(2).orElse((_) => Ok(3)));
   ///
-  /// For an [Err], [other] is called with the contained error.
-  ///
-  /// ```dart
-  /// print(Err(2).orSync((_) => Ok(3)); // "Ok(3)"
+  /// // prints "Ok(3)"
+  /// print(Err<int, String>('error').orElse((_) => Ok(3)));
   /// ```
-  Result<T, F> orSync<F>(Result<T, F> Function(E error) other);
+  @useResult
+  Result<T, F> orElse<F>(Result<T, F> Function(E error) calculateOther);
 
   /// Returns the string representation of `this`.
   ///
-  /// Type information is included if [typeInfo] is `true`.
-  ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Ok<int, String>(2).toString()); // "Ok(2)"
-  /// print(Err<int, String>('2').toString(true)); // "Err<int, String>(2)"
+  /// // prints "Ok(2)"
+  /// print(Ok<int, String>(2).toString());
+  ///
+  /// // prints "Err(error)"
+  /// print(Err<int, String>('error').toString());
   /// ```
   @override
-  String toString([bool typeInfo]);
+  @useResult
+  String toString();
 }
 
 /// An extension on [Result] that is guaranteed to be an [Ok].
-extension OkResult<T> on Result<T, Never> {
+extension SuccessfulResult<T> on Result<T, Never> {
   /// Returns the contained value.
   ///
-  /// Unlike [Result.unwrap()], this method is known to never throw because the error variant cannot
+  /// Unlike [Result.unwrap], this method is known to never throw because the error variant cannot
   /// possibly be instantiated.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Ok(2).value); // "2"
+  /// // prints "2"
+  /// print(Ok<int, String>(2).value);
   /// ```
-  T get value => ok.unwrapSync();
+  @useResult
+  T get value => ok.unwrap();
 }
 
 /// An extension on [Result] that is guaranteed to be an [Err].
-extension ErrResult<E> on Result<Never, E> {
+extension ErroneousResult<E> on Result<Never, E> {
   /// Returns the contained error.
   ///
-  /// Unlike [Result.unwrapErr()], this method is known to never throw because the success variant
+  /// Unlike [Result.unwrapErr], this method is known to never throw because the success variant
   /// cannot possibly be instantiated.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Err(2).error); // "2"
+  /// // prints "error"
+  /// print(Err<int, String>('error').error);
   /// ```
-  E get error => err.unwrapSync();
+  @useResult
+  E get error => err.unwrap();
 }
 
 /// An extension on [Result] containing an [Option].
-extension ResultingOption<T, E> on Result<Option<T>, E> {
-  /// Transposes a [Result] containing an [Option] into an [Option] containing a [Result].
+extension TransposedResult<T, E> on Result<Option<T>, E> {
+  /// A [Result] containing an [Option] transposed into an [Option] containing a [Result].
   ///
   /// An [Ok] with a [None] value will be mapped to a [None], and an [Ok] with a [Some] value will
   /// be mapped to a [Some] with an [Ok] value. An [Err] will be mapped to a [Some] with an [Err]
@@ -709,19 +618,24 @@ extension ResultingOption<T, E> on Result<Option<T>, E> {
   /// # Examples
   ///
   /// ```dart
-  /// print(Ok(Some(2)).transpose()); // "Some(Ok(2))"
-  /// print(Err(2).transpose()); // "Some(Err(2))"
+  /// // prints "Some(Ok(2))"
+  /// print(Ok<Option<int>, String>(Some(2)).transposed);
+  ///
+  /// // prints "Some(Err(2))"
+  /// print(Err<Option<int>, String>(2).transposed);
   /// ```
-  Option<Result<T, E>> transpose() {
-    return matchSync(
-      (value) => value.mapSync((value) => Ok(value)),
-      (error) => Some(Err(error)),
-    );
+  @useResult
+  Option<Result<T, E>> get transposed {
+    return switch (this) {
+      // ignore: unused_result
+      Ok(:final value) => value.map<Result<T, E>>((value) => Ok<T, E>(value)),
+      Err(:final error) => Some(Err(error)),
+    };
   }
 }
 
 /// An extension on [Result] containing another [Result].
-extension ResultingResult<T, E> on Result<Result<T, E>, E> {
+extension FlattenedResult<T, E> on Result<Result<T, E>, E> {
   /// Flattens a [Result] containing another [Result].
   ///
   /// The flattening operation is only ever a single level deep.
@@ -729,21 +643,30 @@ extension ResultingResult<T, E> on Result<Result<T, E>, E> {
   /// # Examples
   ///
   /// ```dart
-  /// print(Ok(Ok(2)).flatten()); // "Ok(2)"
-  /// print(Ok(Err(2)).flatten()); // "Err(2)"
+  /// // prints "Ok(2)"
+  /// print(Ok<Result<int, String>, String>(Ok(2)).flattened);
+  ///
+  /// // prints "Err(error)"
+  /// print(Ok<Result<int, String>, String>(Err('error')).flattened);
   /// ```
-  Result<T, E> flatten() => matchSync((value) => value, (error) => Err(error));
+  @useResult
+  Result<T, E> get flattened {
+    return switch (this) {
+      Ok(:final value) => value,
+      Err(:final error) => Err(error),
+    };
+  }
 }
 
 /// A successful [Result].
-@sealed
-class Ok<T, E> extends Result<T, E> {
+final class Ok<T, E> extends Result<T, E> {
   /// The contained value.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Ok(2).value); // "2"
+  /// // prints "2"
+  /// print(Ok<int, String>(2).value);
   /// ```
   final T value;
 
@@ -752,140 +675,164 @@ class Ok<T, E> extends Result<T, E> {
   /// # Examples
   ///
   /// ```dart
-  /// print(Ok(2)); // "Ok(2)"
+  /// // prints "Ok(2)"
+  /// print(Ok<int, String>(2));
   /// ```
+  @literal
   const Ok(this.value) : super._();
 
   @override
-  List<T> get props => [value];
+  @useResult
+  bool get isOk => true;
 
   @override
-  Iterable<T> get iterable => Iterable<T>.generate(1, (index) => value);
+  @useResult
+  bool isOkAnd(bool Function(T value) condition) => condition(value);
 
   @override
-  Future<void> whenOk(FutureOr<void> Function(T value) fn) async => fn(value);
+  @useResult
+  bool get isErr => false;
 
   @override
-  void whenOkSync(void Function(T value) fn) => fn(value);
+  @useResult
+  bool isErrAnd(bool Function(E error) condition) => false;
 
   @override
-  Future<void> whenErr(FutureOr<void> Function(E error) fn) async {}
-
-  @override
-  void whenErrSync(void Function(E error) fn) {}
-
-  @override
-  Future<U> match<U>(FutureOr<U> Function(T value) fOk, FutureOr<U> Function(E error) fErr) async {
-    return fOk(value);
-  }
-
-  @override
-  U matchSync<U>(U Function(T value) fOk, U Function(E error) fErr) {
-    return fOk(value);
-  }
-
-  @override
+  @useResult
   Some<T> get ok => Some(value);
 
   @override
-  None<E> get err => None<E>();
+  @useResult
+  // ignore: non_const_call_to_literal_constructor
+  None<E> get err => None();
 
   @override
-  Future<T> unwrap({String? msg, FutureOr<T> Function(E error)? ifErr}) async {
-    return value;
+  @useResult
+  T get valueOrNull => value;
+
+  @override
+  @useResult
+  Null get errorOrNull => null;
+
+  @override
+  @useResult
+  Iterable<T> get iterable => Iterable.generate(1, (_) => value);
+
+  @override
+  @useResult
+  bool contains(T value) => value == this.value;
+
+  @override
+  @useResult
+  bool containsErr(E error) => false;
+
+  @override
+  @useResult
+  T unwrap({String? msg}) => value;
+
+  @override
+  @useResult
+  T unwrapOr(T defaultValue) => value;
+
+  @override
+  @useResult
+  T unwrapOrElse(T Function(E error) calculateDefaultValue) => value;
+
+  @override
+  @useResult
+  Never unwrapErr({String? msg}) {
+    throw StateError('${msg ?? 'tried to unwrap `Ok` as `Err`'}: $value');
   }
 
   @override
-  T unwrapSync({String? msg, T Function(E error)? ifErr}) => value;
+  @useResult
+  E unwrapErrOr(E defaultError) => defaultError;
 
   @override
-  Future<E> unwrapErr({
-    String? msg,
-    FutureOr<E> Function(T value)? ifOk,
-  }) async {
-    if (ifOk != null) {
-      return ifOk(value);
-    }
+  @useResult
+  E unwrapErrOrElse(E Function(T value) calculateDefaultError) => calculateDefaultError(value);
 
-    throw StateError(
-      '${msg ?? 'tried to unwrap `Ok` as `Err`'}: $value',
-    );
+  @override
+  @useResult
+  Ok<T, E> inspect(void Function(T value) inspect) {
+    inspect(value);
+
+    return this;
   }
 
   @override
-  E unwrapErrSync({String? msg, E Function(T value)? ifOk}) {
-    if (ifOk != null) {
-      return ifOk(value);
-    }
+  @useResult
+  Ok<T, E> inspectErr(void Function(E error) inspect) => this;
 
-    throw StateError(
-      '${msg ?? 'tried to unwrap `Ok` as `Err`'}: $value',
-    );
+  @override
+  @useResult
+  Ok<U, E> map<U>(U Function(T value) map) => Ok(map(value));
+
+  @override
+  @useResult
+  U mapOr<U>(U Function(T value) map, U defaultValue) => map(value);
+
+  @override
+  @useResult
+  U mapOrElse<U>(U Function(T value) map, U Function(E error) calculateDefaultValue) => map(value);
+
+  @override
+  @useResult
+  Ok<T, F> mapErr<F>(F Function(E error) map) => Ok(value);
+
+  @override
+  @useResult
+  F mapErrOr<F>(F Function(E error) map, F defaultError) => defaultError;
+
+  @override
+  @useResult
+  F mapErrOrElse<F>(F Function(E error) map, F Function(T value) calculateDefaultError) {
+    return calculateDefaultError(value);
   }
 
   @override
-  Future<Result<U, E>> map<U>(
-    FutureOr<U> Function(T value) map, {
-    FutureOr<U> Function(E error)? ifErr,
-  }) async {
-    return Ok(await map(value));
+  @useResult
+  Result<U, E> and<U>(Result<U, E> other) => other;
+
+  @override
+  @useResult
+  Result<U, E> andThen<U>(Result<U, E> Function(T value) calculateOther) => calculateOther(value);
+
+  @override
+  @useResult
+  Ok<T, F> or<F>(Result<T, F> other) => Ok(value);
+
+  @override
+  @useResult
+  Ok<T, F> orElse<F>(Result<T, F> Function(E error) calculateOther) => Ok(value);
+
+  @override
+  @useResult
+  operator ==(covariant Result<T, E> other) {
+    return switch (other) {
+      Ok(:final value) => value == this.value,
+      Err() => false,
+    };
   }
 
   @override
-  Result<U, E> mapSync<U>(
-    U Function(T value) map, {
-    U Function(E error)? ifErr,
-  }) {
-    return Ok(map(value));
-  }
+  @useResult
+  int get hashCode => value.hashCode;
 
   @override
-  Future<Result<T, F>> mapErr<F>(
-    FutureOr<F> Function(E error) map, {
-    FutureOr<F> Function(T value)? ifOk,
-  }) async {
-    return ifOk != null ? Err(await ifOk(value)) : Ok(value);
-  }
-
-  @override
-  Result<T, F> mapErrSync<F>(
-    F Function(E error) map, {
-    F Function(T value)? ifOk,
-  }) {
-    return ifOk != null ? Err(ifOk(value)) : Ok(value);
-  }
-
-  @override
-  Future<Result<U, E>> and<U>(FutureOr<Result<U, E>> Function(T value) other) async {
-    return other(value);
-  }
-
-  @override
-  Result<U, E> andSync<U>(Result<U, E> Function(T value) other) => other(value);
-
-  @override
-  Future<Result<T, F>> or<F>(FutureOr<Result<T, F>> Function(E error) other) async {
-    return Ok(value);
-  }
-
-  @override
-  Result<T, F> orSync<F>(Result<T, F> Function(E error) other) => Ok(value);
-
-  @override
-  String toString([bool typeInfo = false]) {
-    return 'Ok${typeInfo ? '<$T, $E>' : ''}($value)';
-  }
+  @useResult
+  String toString() => 'Ok($value)';
 }
 
 /// An erroneous [Result].
-@sealed
-class Err<T, E> extends Result<T, E> {
+final class Err<T, E> extends Result<T, E> {
   /// The contained error.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Err(2).value); // "2"
+  /// // prints "error"
+  /// print(Err<int, String>('error').error);
   /// ```
   final E error;
 
@@ -894,127 +841,153 @@ class Err<T, E> extends Result<T, E> {
   /// # Examples
   ///
   /// ```dart
-  /// print(Err(2)); // "Err(2)"
+  /// // prints "Err(error)"
+  /// print(Err<int, String>('error'));
   /// ```
+  @literal
   const Err(this.error) : super._();
 
   @override
-  List<E> get props => [error];
+  @useResult
+  bool get isOk => false;
 
   @override
-  Iterable<T> get iterable => Iterable<T>.empty();
+  @useResult
+  bool isOkAnd(bool Function(T value) condition) => false;
 
   @override
-  Future<void> whenOk(FutureOr<void> Function(T value) fn) async {}
+  @useResult
+  bool get isErr => true;
 
   @override
-  void whenOkSync(void Function(T value) fn) {}
+  @useResult
+  bool isErrAnd(bool Function(E error) condition) => condition(error);
 
   @override
-  Future<void> whenErr(FutureOr<void> Function(E error) fn) async => fn(error);
+  @useResult
+  // ignore: non_const_call_to_literal_constructor
+  None<T> get ok => None();
 
   @override
-  void whenErrSync(void Function(E error) fn) => fn(error);
+  @useResult
+  Some<E> get err => Some(error);
 
   @override
-  Future<U> match<U>(FutureOr<U> Function(T value) fOk, FutureOr<U> Function(E error) fErr) async {
-    return fErr(error);
+  @useResult
+  Null get valueOrNull => null;
+
+  @override
+  @useResult
+  E get errorOrNull => error;
+
+  @override
+  @useResult
+  Iterable<T> get iterable => const Iterable.empty();
+
+  @override
+  @useResult
+  bool contains(T value) => false;
+
+  @override
+  @useResult
+  bool containsErr(E error) => error == this.error;
+
+  @override
+  @useResult
+  Never unwrap({String? msg}) {
+    throw StateError('${msg ?? 'tried to unwrap `Err` as `Ok`'}: $error');
   }
 
   @override
-  U matchSync<U>(U Function(T value) fOk, U Function(E error) fErr) {
-    return fErr(error);
+  @useResult
+  T unwrapOr(T defaultValue) => defaultValue;
+
+  @override
+  @useResult
+  T unwrapOrElse(T Function(E error) calculateDefaultValue) => calculateDefaultValue(error);
+
+  @override
+  @useResult
+  E unwrapErr({String? msg}) => error;
+
+  @override
+  @useResult
+  E unwrapErrOr(E defaultError) => error;
+
+  @override
+  @useResult
+  E unwrapErrOrElse(E Function(T value) calculateDefaultError) => error;
+
+  @override
+  @useResult
+  Err<T, E> inspect(void Function(T value) inspect) => this;
+
+  @override
+  @useResult
+  Err<T, E> inspectErr(void Function(E error) inspect) {
+    inspect(error);
+
+    return this;
   }
 
   @override
-  Option<T> get ok => None<T>();
+  @useResult
+  Err<U, E> map<U>(U Function(T value) map) => Err(error);
 
   @override
-  Option<E> get err => Some(error);
+  @useResult
+  U mapOr<U>(U Function(T value) map, U defaultValue) => defaultValue;
 
   @override
-  Future<T> unwrap({String? msg, FutureOr<T> Function(E error)? ifErr}) async {
-    if (ifErr != null) {
-      return ifErr(error);
-    }
-
-    throw StateError(
-      '${msg ?? 'tried to unwrap `Err` as `Ok`'}: $error',
-    );
+  @useResult
+  U mapOrElse<U>(U Function(T value) map, U Function(E error) calculateDefaultValue) {
+    return calculateDefaultValue(error);
   }
 
   @override
-  T unwrapSync({String? msg, T Function(E error)? ifErr}) {
-    if (ifErr != null) {
-      return ifErr(error);
-    }
+  @useResult
+  Err<T, F> mapErr<F>(F Function(E error) map) => Err(map(error));
 
-    throw StateError(
-      '${msg ?? 'tried to unwrap `Err` as `Ok`'}: $error',
-    );
+  @override
+  @useResult
+  F mapErrOr<F>(F Function(E error) map, F defaultError) => map(error);
+
+  @override
+  @useResult
+  F mapErrOrElse<F>(F Function(E error) map, F Function(T value) calculateDefaultError) {
+    return map(error);
   }
 
   @override
-  Future<E> unwrapErr({
-    String? msg,
-    FutureOr<E> Function(T value)? ifOk,
-  }) async {
-    return error;
+  @useResult
+  Err<U, E> and<U>(Result<U, E> other) => Err(error);
+
+  @override
+  @useResult
+  Err<U, E> andThen<U>(Result<U, E> Function(T value) calculateOther) => Err(error);
+
+  @override
+  @useResult
+  Result<T, F> or<F>(Result<T, F> other) => other;
+
+  @override
+  @useResult
+  Result<T, F> orElse<F>(Result<T, F> Function(E error) calculateOther) => calculateOther(error);
+
+  @override
+  @useResult
+  operator ==(covariant Result<T, E> other) {
+    return switch (other) {
+      Ok() => false,
+      Err(:final error) => error == this.error,
+    };
   }
 
   @override
-  E unwrapErrSync({String? msg, E Function(T value)? ifOk}) => error;
+  @useResult
+  int get hashCode => error.hashCode;
 
   @override
-  Future<Result<U, E>> map<U>(
-    FutureOr<U> Function(T value) map, {
-    FutureOr<U> Function(E error)? ifErr,
-  }) async {
-    return ifErr != null ? Ok(await ifErr(error)) : Err(error);
-  }
-
-  @override
-  Result<U, E> mapSync<U>(
-    U Function(T value) map, {
-    U Function(E error)? ifErr,
-  }) {
-    return ifErr != null ? Ok(ifErr(error)) : Err(error);
-  }
-
-  @override
-  Future<Result<T, F>> mapErr<F>(
-    FutureOr<F> Function(E error) map, {
-    FutureOr<F> Function(T value)? ifOk,
-  }) async {
-    return Err(await map(error));
-  }
-
-  @override
-  Result<T, F> mapErrSync<F>(
-    F Function(E error) map, {
-    F Function(T value)? ifOk,
-  }) {
-    return Err(map(error));
-  }
-
-  @override
-  Future<Result<U, E>> and<U>(FutureOr<Result<U, E>> Function(T value) other) async {
-    return Err(error);
-  }
-
-  @override
-  Result<U, E> andSync<U>(Result<U, E> Function(T value) other) => Err(error);
-
-  @override
-  Future<Result<T, F>> or<F>(FutureOr<Result<T, F>> Function(E error) other) async {
-    return other(error);
-  }
-
-  @override
-  Result<T, F> orSync<F>(Result<T, F> Function(E error) other) => other(error);
-
-  @override
-  String toString([bool typeInfo = false]) {
-    return 'Err${typeInfo ? '<$T, $E>' : ''}($error)';
-  }
+  @useResult
+  String toString() => 'Err($error)';
 }

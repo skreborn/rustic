@@ -1,10 +1,15 @@
+/// Constructs related to optional values.
+
 import 'dart:async';
 
-import 'package:equatable/equatable.dart';
 import 'package:meta/meta.dart';
 
 import 'result.dart';
-import 'tuple.dart';
+
+@immutable
+final class _CheckException implements Exception {
+  const _CheckException();
+}
 
 /// An optional value.
 ///
@@ -17,10 +22,8 @@ import 'tuple.dart';
 /// If an error occurs during conversion, a [None] is returned.
 ///
 /// ```dart
-/// Future<Option<int>> multiply(String a, String b) {
-///   return int.tryParse(a).asOption().and((a) {
-///     return int.tryParse(b).asOption().map((b) => a * b);
-///   });
+/// Option<int> multiply(String a, String b) {
+///   return int.tryParse(a).optional.zip(int.tryParse(b).optional).map((ab) => ab.$1 * ab.$2);
 /// }
 /// ```
 ///
@@ -28,19 +31,102 @@ import 'tuple.dart';
 /// [None] if that operation is not possible due to a conversion error.
 ///
 /// ```dart
-/// print(await multiply('2', '3')); // "Some(6)"
-/// print(await multiply('two', '3')); // "None"
+/// // prints "Some(6)"
+/// print(multiply('2', '3'));
+///
+/// // prints "None"
+/// print(multiply('two', '3'));
 /// ```
-@sealed
 @immutable
-abstract class Option<T> extends Equatable {
+sealed class Option<T> {
+  /// Encloses any number of operations, optionally returning early on [None].
+  ///
+  /// See [collectAsync] for an asynchronous version of this function.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// final collected = Option.collect<int>((check) {
+  ///   // This passes the check and `first` gets the value `2`
+  ///   final first = check(const Some(2));
+  ///
+  ///   // This fails the check and no value is returned from the collector
+  ///   final second = check(const None());
+  ///
+  ///   // This is never reached
+  ///   return Some(first + second);
+  /// });
+  ///
+  /// // prints "None"
+  /// print(collected);
+  /// ```
+  @useResult
+  static Option<T> collect<T>(
+    Option<T> Function(T Function(Option<T> option) check) collector,
+  ) {
+    try {
+      return collector((option) {
+        return switch (option) {
+          Some(:final value) => value,
+          None() => throw const _CheckException()
+        };
+      });
+    } on _CheckException {
+      // ignore: non_const_call_to_literal_constructor
+      return None();
+    }
+  }
+
+  /// Encloses any number of operations, optionally returning early on [None].
+  ///
+  /// See [collect] for a synchronous version of this function.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// final collected = await Option.collectAsync<int>((check) async {
+  ///   // This passes the check and `first` gets the value `2`
+  ///   final first = check(await Future.value(const Some(2)));
+  ///
+  ///   // This fails the check and no value is returned from the collector
+  ///   final second = check(await Future.value(const None()));
+  ///
+  ///   // This is never reached
+  ///   return Some(first + second);
+  /// });
+  ///
+  /// // prints "None"
+  /// print(collected);
+  /// ```
+  @useResult
+  static Future<Option<T>> collectAsync<T>(
+    FutureOr<Option<T>> Function(T Function(Option<T> option) check) collector,
+  ) async {
+    try {
+      return await collector((option) {
+        return switch (option) {
+          Some(:final value) => value,
+          None() => throw const _CheckException()
+        };
+      });
+    } on _CheckException {
+      // ignore: non_const_call_to_literal_constructor
+      return None();
+    }
+  }
+
+  const Option._();
+
   /// Creates a [Some] with the given [value], if it is not `null`, or a [None] otherwise.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Option(2)); // "Some(2)"
-  /// print(Option(null)); // "None"
+  /// // prints "Some(2)"
+  /// print(Option(2));
+  ///
+  /// // prints "None"
+  /// print(Option<int>(null));
   /// ```
   factory Option(T? value) => value != null ? Some(value) : None<T>();
 
@@ -49,8 +135,10 @@ abstract class Option<T> extends Equatable {
   /// # Examples
   ///
   /// ```dart
-  /// print(Option.some(2)); // "Some(2)"
+  /// // prints "Some(2)"
+  /// print(Option.some(2));
   /// ```
+  @literal
   const factory Option.some(T value) = Some<T>;
 
   /// Creates a [None].
@@ -58,509 +146,419 @@ abstract class Option<T> extends Equatable {
   /// # Examples
   ///
   /// ```dart
-  /// print(Option.none()); // "None"
+  /// // prints "None"
+  /// print(Option<int>.none());
   /// ```
+  @literal
   const factory Option.none() = None<T>;
 
-  const Option._();
-
-  /// `true` if `this` is a [Some].
+  /// Whether `this` is a [Some].
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Some(2).isSome); // "true"
-  /// print(None().isSome); // "false"
+  /// // prints "true"
+  /// print(Some(2).isSome);
+  ///
+  /// // prints "false"
+  /// print(None<int>().isSome);
   /// ```
-  bool get isSome => this is Some;
+  @useResult
+  bool get isSome;
 
-  /// `true` if `this` is a [None].
+  /// Returns `true` if `this` is a [Some] with a contained value that satisfies [condition].
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Some(2).isNone); // "false"
-  /// print(None().isNone); // "true"
+  /// // prints "true"
+  /// print(Some(2).isSomeAnd((value) => value == 2));
+  ///
+  /// // prints "false"
+  /// print(None<int>().isSomeAnd((value) => value == 2));
   /// ```
-  bool get isNone => this is None;
+  @useResult
+  bool isSomeAnd(bool Function(T value) condition);
+
+  /// Whether `this` is a [None].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "false"
+  /// print(Some(2).isNone);
+  ///
+  /// // prints "true"
+  /// print(None<int>().isNone);
+  /// ```
+  @useResult
+  bool get isNone;
+
+  /// The contained value if `this` is a [Some], or `null` otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "2"
+  /// print(Some(2).valueOrNull);
+  ///
+  /// // prints "null"
+  /// print(None<int>().valueOrNull);
+  /// ```
+  @useResult
+  T? get valueOrNull;
 
   /// Returns an iterable over the possibly contained value.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Some(2).iterable.length); // "1"
-  /// print(None().iterable.length); // "0"
+  /// // prints "[2]"
+  /// print(Some(2).iterable.toList());
+  ///
+  /// // prints "[]"
+  /// print(None<int>().iterable.toList());
   /// ```
+  @useResult
   Iterable<T> get iterable;
 
-  /// Returns the contained value if `this` is a [Some], otherwise `null`.
+  /// Returns `true` if `this` is a [Some] of the given [value].
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Some(2).asPlain()); // "2"
-  /// print(None().asPlain()); // "null"
+  /// // prints "true"
+  /// print(Some(2).contains(2));
+  ///
+  /// // prints "false"
+  /// print(None<int>().contains(2));
   /// ```
-  T? asPlain();
-
-  /// Returns `true` if `this` is a [Some] with the given [value].
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// print(Some(2).contains(2)); // "true"
-  /// print(Some(2).contains(3)); // "false"
-  /// print(None().contains(2)); // "false"
-  /// ```
-  bool contains(T value) => this == Some(value);
-
-  /// Executes [fn] if `this` is a [Some].
-  ///
-  /// See [whenSomeSync] for a synchronous version of this funcion.
-  ///
-  /// # Examples
-  ///
-  /// For a [Some], [fn] is called with the contained value.
-  ///
-  /// ```dart
-  /// await Some(2).whenSome((_) => print('some')); // "some"
-  /// ```
-  ///
-  /// For a [None], [fn] is never called.
-  ///
-  /// ```dart
-  /// await None(2).whenSome((_) => print('some')); // Outputs nothing
-  /// ```
-  Future<void> whenSome(FutureOr<void> Function(T value) fn);
-
-  /// Executes [fn] if `this` is a [Some].
-  ///
-  /// See [whenSome] for an asynchronous version of this funcion.
-  ///
-  /// # Examples
-  ///
-  /// For a [Some], [fn] is called with the contained value.
-  ///
-  /// ```dart
-  /// Some(2).whenSomeSync((_) => print('some')); // "some"
-  /// ```
-  ///
-  /// For a [None], [fn] is never called.
-  ///
-  /// ```dart
-  /// None(2).whenSomeSync((_) => print('some')); // Outputs nothing
-  /// ```
-  void whenSomeSync(void Function(T value) fn);
-
-  /// Executes [fn] if `this` is a [None].
-  ///
-  /// See [whenNoneSync] for a synchronous version of this funcion.
-  ///
-  /// # Examples
-  ///
-  /// For a [Some], [fn] is never called.
-  ///
-  /// ```dart
-  /// await Some(2).whenNone(() => print('none')); // Outputs nothing
-  /// ```
-  ///
-  /// For a [None], [fn] is called.
-  ///
-  /// ```dart
-  /// await None(2).whenNone(() => print('none')); // "none"
-  /// ```
-  Future<void> whenNone(FutureOr<void> Function() fn);
-
-  /// Executes [fn] if `this` is a [None].
-  ///
-  /// See [whenNone] for an asynchronous version of this funcion.
-  ///
-  /// # Examples
-  ///
-  /// For a [Some], [fn] is never called.
-  ///
-  /// ```dart
-  /// Some(2).whenNoneSync(() => print('none')); // Outputs nothing
-  /// ```
-  ///
-  /// For a [None], [fn] is called.
-  ///
-  /// ```dart
-  /// None(2).whenNoneSync(() => print('none')); // "none"
-  /// ```
-  void whenNoneSync(void Function() fn);
-
-  /// Applies mapping function [fSome] if `this` is a [Some] and [fNone] otherwise.
-  ///
-  /// See [matchSync] for a synchronous version of this funcion.
-  ///
-  /// # Examples
-  ///
-  /// For a [Some], [fSome] is called with the contained value.
-  ///
-  /// ```dart
-  /// print(await Some(2).match((_) => 'some', () => 'none')); // "some"
-  /// ```
-  ///
-  /// For a [None], [fNone] is called.
-  ///
-  /// ```dart
-  /// print(await None().match((_) => 'some', () => 'none')); // "none"
-  /// ```
-  Future<U> match<U>(FutureOr<U> Function(T value) fSome, FutureOr<U> Function() fNone);
-
-  /// Applies mapping function [fSome] if `this` is a [Some] and [fNone] otherwise.
-  ///
-  /// See [match] for an asynchronous version of this funcion.
-  ///
-  /// # Examples
-  ///
-  /// For a [Some], [fSome] is called with the contained value.
-  ///
-  /// ```dart
-  /// print(Some(2).matchSync((_) => 'some', () => 'none')); // "some"
-  /// ```
-  ///
-  /// For a [None], [fNone] is called.
-  ///
-  /// ```dart
-  /// print(None().matchSync((_) => 'some', () => 'none')); // "none"
-  /// ```
-  U matchSync<U>(U Function(T value) fSome, U Function() fNone);
+  @useResult
+  bool contains(T value);
 
   /// Returns the contained value.
   ///
-  /// See [unwrapSync] for a synchronous version of this funcion.
-  ///
-  /// If `this` is a [None], [ifNone] is called to compute a fallback value.
-  ///
   /// # Throws
   ///
-  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is a [None] and
-  /// [ifNone] is `null`.
+  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is a [None].
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(await Some(2).unwrap()); // "2"
-  /// print(await None().unwrap()); // Throws a `StateError`
+  /// // prints "2"
+  /// print(Some(2).unwrap());
+  ///
+  /// // throws a `StateError`
+  /// print(None<int>().unwrap());
   /// ```
-  Future<T> unwrap({String msg, FutureOr<T> Function() ifNone});
+  @useResult
+  T unwrap({String? msg});
 
-  /// Returns the contained value.
-  ///
-  /// See [unwrap] for an asynchronous version of this funcion.
-  ///
-  /// If `this` is a [None], [ifNone] is called to compute a fallback value.
-  ///
-  /// # Throws
-  ///
-  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is a [None] and
-  /// [ifNone] is `null`.
+  /// Returns the contained value, if any, or [defaultValue] otherwise.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Some(2).unwrapSync()); // "2"
-  /// print(None().unwrapSync()); // Throws a `StateError`
+  /// // prints "2"
+  /// print(Some(2).unwrapOr(3));
+  ///
+  /// // prints "3"
+  /// print(None<int>().unwrapOr(3));
   /// ```
-  T unwrapSync({String msg, T Function() ifNone});
+  @useResult
+  T unwrapOr(T defaultValue);
 
-  /// Expects `this` to be [None] and returns nothing.
-  ///
-  /// # Throws
-  ///
-  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is a [Some].
+  /// Returns the contained value, if any, or the result of [calculateDefaultValue] otherwise.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// Some(2).unwrapNone(); // Throws a `StateError`
-  /// None().unwrapNone(); // Does not throw
+  /// // prints "2"
+  /// print(Some(2).unwrapOrElse(() => 3));
+  ///
+  /// // prints "3"
+  /// print(None<int>().unwrapOrElse(() => 3));
   /// ```
-  void unwrapNone({String msg});
+  @useResult
+  T unwrapOrElse(T Function() calculateDefaultValue);
+
+  /// Calls [inspect] with the contained value if `this` is a [Some].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "2"
+  /// Some(2).inspect((value) => print(value)));
+  ///
+  /// // prints nothing
+  /// None<int>().inspect((value) => print(value)));
+  /// ```
+  @useResult
+  Option<T> inspect(void Function(T value) inspect);
 
   /// Transforms the contained value, if any, by applying [map] to it.
   ///
-  /// If `this` is a [None], and [ifNone] is not `null`, it is called to compute a fallback value.
-  ///
-  /// See [mapSync] for a synchronous version of this funcion.
-  ///
   /// # Examples
   ///
-  /// For a [Some], [map] is called with the contained value.
-  ///
   /// ```dart
-  /// print(await Some(2).map((_) => 'some')); // "Some(some)"
-  /// ```
+  /// // prints "Some(some: 2)"
+  /// print(Some(2).map((value) => 'some: $value'));
   ///
-  /// For a [None], [map] is never called.
-  ///
-  /// ```dart
-  /// print(await None().map((_) => 'some')); // "None"
+  /// // prints "None"
+  /// print(None<int>().map((value) => 'some: $value'));
   /// ```
-  Future<Option<U>> map<U>(
-    FutureOr<U> Function(T value) map, {
-    FutureOr<U> Function() ifNone,
-  });
+  @useResult
+  Option<U> map<U>(U Function(T value) map);
 
-  /// Transforms the contained value, if any, by applying [map] to it.
-  ///
-  /// If `this` is a [None], and [ifNone] is not `null`, it is called to compute a fallback value.
-  ///
-  /// See [map] for an asynchronous version of this funcion.
+  /// Returns the contained value, if any, with [map] applied to it, or [defaultValue] otherwise.
   ///
   /// # Examples
   ///
-  /// For a [Some], [map] is called with the contained value.
-  ///
   /// ```dart
-  /// print(Some(2).mapSync((_) => 'some')); // "Some(some)"
-  /// ```
+  /// // prints "some: 2"
+  /// print(Some(2).mapOr((value) => 'some: $value'), 'none');
   ///
-  /// For a [None], [map] is never called.
-  ///
-  /// ```dart
-  /// print(None().mapSync((_) => 'some')); // "None"
+  /// // prints "none"
+  /// print(None<int>().mapOr((value) => 'some: $value'), 'none');
   /// ```
-  Option<U> mapSync<U>(U Function(T value) map, {U Function() ifNone});
+  @useResult
+  U mapOr<U>(U Function(T value) map, U defaultValue);
 
-  /// Transforms an [Option] into a [Result], mapping [Some] to [Ok] and [None] to [Err] using
-  /// [ifNone].
-  ///
-  /// See [okOrSync] for a synchronous version of this funcion.
+  /// Returns the contained value, if any, with [map] applied to it, or the result of
+  /// [calculateDefaultValue] otherwise.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(await Some(2).okOr(() => 'none'); // "Ok(2)"
-  /// print(await None().okOr(() => 'none'); // "Err(none)"
+  /// // prints "some: 2"
+  /// print(Some(2).mapOrElse((value) => 'some: $value'), () => 'none');
+  ///
+  /// // prints "none"
+  /// print(None<int>().mapOrElse((value) => 'some: $value'), () => 'none');
   /// ```
-  Future<Result<T, E>> okOr<E>(FutureOr<E> Function() ifNone);
+  @useResult
+  U mapOrElse<U>(U Function(T value) map, U Function() calculateDefaultValue);
 
-  /// Transforms an [Option] into a [Result], mapping [Some] to [Ok] and [None] to [Err] using
-  /// [ifNone].
-  ///
-  /// See [okOr] for an asynchronous version of this funcion.
+  /// Transforms an [Option] into a [Result], mapping [Some] to an [Ok] of the contained value and
+  /// [None] to [Err] of [error].
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Some(2).okOrSync(() => 'none'); // "Ok(2)"
-  /// print(None().okOrSync(() => 'none'); // "Err(none)"
+  /// // prints "Ok(2)"
+  /// print(Some(2).okOr('none');
+  ///
+  /// // prints "Err(none)"
+  /// print(None<int>().okOr('none');
   /// ```
-  Result<T, E> okOrSync<E>(E Function() ifNone);
+  @useResult
+  Result<T, E> okOr<E>(E error);
 
-  /// Returns the result of calling [other] if `this` is a [Some], otherwise [None].
-  ///
-  /// See [andSync] for a synchronous version of this funcion.
+  /// Transforms an [Option] into a [Result], mapping [Some] to an [Ok] of the contained value and
+  /// [None] to [Err] of the result of [calculateError].
   ///
   /// # Examples
   ///
-  /// For a [Some], [other] is called with the contained value.
-  ///
   /// ```dart
-  /// print(await Some(2).and((_) => Some(3)); // "Some(3)"
-  /// ```
+  /// // prints "Ok(2)"
+  /// print(Some(2).okOrElse(() => 'none');
   ///
-  /// For a [None], [other] is never called.
-  ///
-  /// ```dart
-  /// print(await None().and((_) => Some(3)); // "None"
+  /// // prints "Err(none)"
+  /// print(None<int>().okOrElse(() => 'none');
   /// ```
-  Future<Option<U>> and<U>(FutureOr<Option<U>> Function(T value) other);
+  @useResult
+  Result<T, E> okOrElse<E>(E Function() calculateError);
 
-  /// Returns the result of calling [other] if `this` is a [Some], otherwise [None].
-  ///
-  /// See [and] for an asynchronous version of this funcion.
+  /// Returns [other] if `this` is a [Some], or [None] otherwise.
   ///
   /// # Examples
   ///
-  /// For a [Some], [other] is called with the contained value.
-  ///
   /// ```dart
-  /// print(Some(2).andSync((_) => Some(3)); // "Some(3)"
-  /// ```
+  /// // prints "Some(3)"
+  /// print(Some(2).and(Some(3)));
   ///
-  /// For a [None], [other] is never called.
-  ///
-  /// ```dart
-  /// print(None().andSync((_) => Some(3)); // "None"
+  /// // prints "None"
+  /// print(None<int>().and(Some(3)));
   /// ```
-  Option<U> andSync<U>(Option<U> Function(T value) other);
+  @useResult
+  Option<U> and<U>(Option<U> other);
 
-  /// Returns `this` unchanged if `this` is a [Some], otherwise the result of calling [other].
-  ///
-  /// See [orSync] for a synchronous version of this funcion.
+  /// Returns the result of [calculateOther] if `this` is a [Some], or [None] otherwise.
   ///
   /// # Examples
   ///
-  /// For a [Some], [other] is never called.
-  ///
   /// ```dart
-  /// print(await Some(2).or((_) => Some(3)); // "Some(2)"
-  /// ```
+  /// // prints "Some(3)"
+  /// print(Some(2).andThen((value) => Some(3)));
   ///
-  /// For a [None], [other] is called.
-  ///
-  /// ```dart
-  /// print(await None().or((_) => Some(3)); // "Some(3)"
+  /// // prints "None"
+  /// print(None<int>().andThen((value) => Some(3)));
   /// ```
-  Future<Option<T>> or(FutureOr<Option<T>> Function() other);
+  @useResult
+  Option<U> andThen<U>(Option<U> Function(T value) calculateOther);
 
-  /// Returns `this` unchanged if `this` is a [Some], otherwise the result of calling [other].
-  ///
-  /// See [or] for an asynchronous version of this funcion.
+  /// Returns a [Some] of the original value if `this` is a [Some], or [other] otherwise.
   ///
   /// # Examples
   ///
-  /// For a [Some], [other] is never called.
-  ///
   /// ```dart
-  /// print(Some(2).orSync((_) => Some(3)); // "Some(2)"
-  /// ```
+  /// // prints "Some(2)"
+  /// print(Some(2).or(Some(3)));
   ///
-  /// For a [None], [other] is called.
-  ///
-  /// ```dart
-  /// print(None().orSync((_) => Some(3)); // "Some(3)"
+  /// // prints "Some(3)"
+  /// print(None<int>().or(Some(3)));
   /// ```
-  Option<T> orSync(Option<T> Function() other);
+  @useResult
+  Option<T> or(Option<T> other);
 
-  /// Returns `this` unchanged if either, but not both, of `this` and [other] is a [Some], otherwise
-  /// [None].
+  /// Returns a [Some] of the original value if `this` is a [Some], or the result of
+  /// [calculateOther] otherwise.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Some(2).xor(Some(3)); // "None"
-  /// print(Some(2).xor(None()); // "Some(2)"
+  /// // prints "Some(2)"
+  /// print(Some(2).orElse(() => Some(3)));
+  ///
+  /// // prints "Some(3)"
+  /// print(None<int>().orElse(() => Some(3)));
   /// ```
+  @useResult
+  Option<T> orElse(Option<T> Function() calculateOther);
+
+  /// Returns a [Some] if either, but not both, of `this` and [other] is a [Some], or [None]
+  /// otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "None"
+  /// print(Some(2).xor(Some(3)))
+  ///
+  /// // prints "Some(2)";
+  /// print(Some(2).xor(None()));
+  /// ```
+  @useResult
   Option<T> xor(Option<T> other);
 
-  /// Returns `this` unchanged if `this` is a [Some] and satisfies [condition], otherwise [None].
-  ///
-  /// See [whereSync] for a synchronous version of this funcion.
+  /// Returns a [Some] of the original value if `this` is a [Some] and its contained value satisfies
+  /// [condition], or [None] otherwise.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(await Some(2).where((_) => true); // "Some(2)"
-  /// print(await Some(2).where((_) => false); // "None"
+  /// // prints "Some(2)"
+  /// print(Some(2).where((value) => true));
+  ///
+  /// // prints "None"
+  /// print(Some(2).where((value) => false));
   /// ```
-  Future<Option<T>> where(FutureOr<bool> Function(T value) condition);
+  @useResult
+  Option<T> where(bool Function(T value) condition);
 
-  /// Returns `this` unchanged if `this` is a [Some] and satisfies [condition], otherwise [None].
-  ///
-  /// See [where] for an asynchronous version of this funcion.
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// print(Some(2).whereSync((_) => true); // "Some(2)"
-  /// print(Some(2).whereSync((_) => false); // "None"
-  /// ```
-  Option<T> whereSync(bool Function(T value) condition);
-
-  /// Returns [Some] if `this` is a [Some] with a value of type [U], otherwise [None].
+  /// Returns a [Some] of the original value if `this` is a [Some] with a contained value of type
+  /// [U], or [None] otherwise.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Some(2).whereType<int>()); // "Some(2)"
-  /// print(Some(2).whereType<bool>()); // "None"
+  /// // prints "Some(2)"
+  /// print(Some(2).whereType<int>());
+  ///
+  /// // prints "None"
+  /// print(Some(2).whereType<bool>());
   /// ```
+  @useResult
   Option<U> whereType<U>();
 
-  /// Returns [Some] with a [Tuple2] value if both `this` and the result of calling [other] are
-  /// [Some], otherwise [None].
-  ///
-  /// See [zipSync] for a synchronous version of this funcion.
+  /// Returns a tuple of both `this` and [other] if both are [Some], or [None] otherwise.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(await Some(2).zip(Some('some')); // "Some(Tuple2(2, some))"
-  /// print(await Some(2).zip(None()); // "None"
+  /// // prints "Some((2, some))"
+  /// print(Some(2).zip(Some('some')));
+  ///
+  /// // prints "None"
+  /// print(Some(2).zip(None<String>()));
   /// ```
-  Future<Option<Tuple2<T, U>>> zip<U>(FutureOr<Option<U>> Function(T value) other);
+  @useResult
+  Option<(T, U)> zip<U>(Option<U> other);
 
-  /// Returns [Some] with a [Tuple2] value if both `this` and the result of calling [other] are
-  /// [Some], otherwise [None].
-  ///
-  /// See [zip] for an asynchronous version of this funcion.
+  /// Returns the result of [zip] called with both `this` and [other] if both are [Some], or [None]
+  /// otherwise.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Some(2).zipSync(Some('some')); // "Some(Tuple2(2, some))"
-  /// print(Some(2).zipSync(None()); // "None"
+  /// // prints "Some((2, some))"
+  /// print(Some(2).zipWith(Some('some'), (a, b) => (a, b)));
+  ///
+  /// // prints "None"
+  /// print(Some(2).zipWith(None<String>(), (a, b) => (a, b)));
   /// ```
-  Option<Tuple2<T, U>> zipSync<U>(Option<U> Function(T value) other);
-
-  /// Returns [Some] with the result of calling [zipper] if both `this` and the result of calling
-  /// [other] are [Some], otherwise [None].
-  ///
-  /// See [zipWithSync] for a synchronous version of this funcion.
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// print(await Some(2).zipWith(Some(3), (a, b) => a + b); // "Some(5)"
-  /// print(await Some(2).zipWith(None(), (a, b) => a + b); // "None"
-  /// ```
-  Future<Option<R>> zipWith<U, R>(
-    FutureOr<Option<U>> Function(T value) other,
-    FutureOr<R> Function(T first, U second) zipper,
-  );
-
-  /// Returns [Some] with the result of calling [zipper] if both `this` and the result of calling
-  /// [other] are [Some], otherwise [None].
-  ///
-  /// See [zipWith] for an asynchronous version of this funcion.
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// print(Some(2).zipWithSync(Some(3), (a, b) => a + b); // "Some(5)"
-  /// print(Some(2).zipWithSync(None(), (a, b) => a + b); // "None"
-  /// ```
-  Option<R> zipWithSync<U, R>(
-    Option<U> Function(T value) other,
-    R Function(T first, U second) zipper,
-  );
+  @useResult
+  Option<R> zipWith<U, R>(Option<U> other, R Function(T value, U otherValue) zip);
 
   /// Returns the string representation of `this`.
   ///
-  /// Type information is included if [typeInfo] is `true`.
-  ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Some<int>(2).toString()); // "Some(2)"
-  /// print(None<int>().toString(true)); // "None<int>"
+  /// // prints "Some(2)"
+  /// print(Some(2).toString());
+  ///
+  /// // prints "None"
+  /// print(None<int>().toString());
   /// ```
   @override
-  String toString([bool typeInfo]);
+  @useResult
+  String toString();
 }
 
 /// An extension on any nullable object.
-extension Optionable<T> on T? {
+extension Optional<T> on T? {
   /// Creates a [Some] with `this` as its value, if it is not `null`, or a [None] otherwise.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(2.asOption()); // "Some(2)"
-  /// print(null.asOption()); // "None"
+  /// // prints "Some(2)"
+  /// print(2.optional);
+  ///
+  /// // prints "None"
+  /// print(null.optional);
   /// ```
-  Option<T> asOption() => Option(this);
+  @useResult
+  Option<T> get optional => Option(this);
 }
 
 /// An extension on [Option] containing a [Result].
-extension OptionalResult<T, E> on Option<Result<T, E>> {
-  /// Transposes an [Option] containing a [Result] into a [Result] containing an [Option].
+extension UnzippedOption<T, U> on Option<(T, U)> {
+  /// An [Option] containing a tuple transformed into a tuple of two [Option]s.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "(Some(2), Some(true))"
+  /// print(Some((2, true)).unzipped);
+  ///
+  /// // prints "(None, None)"
+  /// print(None<(int, bool)>().unzipped);
+  /// ```
+  @useResult
+  (Option<T>, Option<U>) get unzipped {
+    return switch (this) {
+      Some(:final value) => (Some(value.$1), Some(value.$2)),
+      // ignore: non_const_call_to_literal_constructor
+      None() => (None(), None()),
+    };
+  }
+}
+
+/// An extension on [Option] containing a [Result].
+extension TransposedOption<T, E> on Option<Result<T, E>> {
+  /// An [Option] containing a [Result] transposed into a [Result] containing an [Option].
   ///
   /// A [None] will be mapped to an [Ok] with a [None] value. A [Some] with an [Ok] value will be
   /// mapped to an [Ok] with a [Some] value, and a [Some] with an [Err] value will be mapped to an
@@ -569,41 +567,57 @@ extension OptionalResult<T, E> on Option<Result<T, E>> {
   /// # Examples
   ///
   /// ```dart
-  /// print(await Some(Ok(2)).transpose()); // "Ok(Some(2))"
-  /// print(await Some(Err(2)).transpose()); // "Err(2)"
+  /// // prints "Ok(Some(2))"
+  /// print(Some(Ok(2)).transposed);
+  ///
+  /// // prints "Err(2)"
+  /// print(Some(Err(2)).transposed);
   /// ```
-  Result<Option<T>, E> transpose() {
-    return matchSync(
-      (value) => value.mapSync((value) => Some(value)),
-      () => Ok(None<T>()),
-    );
+  @useResult
+  Result<Option<T>, E> get transposed {
+    return switch (this) {
+      // ignore: unused_result
+      Some(:final value) => value.map((value) => Some(value)),
+      // ignore: non_const_call_to_literal_constructor
+      None() => Ok(None()),
+    };
   }
 }
 
 /// An extension on [Option] containing another [Option].
-extension OptionalOption<T> on Option<Option<T>> {
-  /// Flattens an [Option] containing another [Option].
+extension FlattenedOption<T> on Option<Option<T>> {
+  /// An [Option] containing another [Option] flattened into a single [Option].
   ///
   /// The flattening operation is only ever a single level deep.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Some(Some(2)).flatten()); // "Some(2)"
-  /// print(Some(None()).flatten()); // "None"
+  /// // prints "Some(2)"
+  /// print(Some(Some(2)).flattened);
+  ///
+  /// // prints "None"
+  /// print(Some(None<int>()).flattened);
   /// ```
-  Option<T> flatten() => matchSync((value) => value, () => None<T>());
+  @useResult
+  Option<T> get flattened {
+    return switch (this) {
+      Some(:final value) => value,
+      // ignore: non_const_call_to_literal_constructor
+      None() => None(),
+    };
+  }
 }
 
 /// An [Option] with a value.
-@sealed
-class Some<T> extends Option<T> {
+final class Some<T> extends Option<T> {
   /// The contained value.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(Some(2).value); // "2"
+  /// // prints "2"
+  /// print(Some(2).value);
   /// ```
   final T value;
 
@@ -612,288 +626,275 @@ class Some<T> extends Option<T> {
   /// # Examples
   ///
   /// ```dart
-  /// print(Some(2)); // "Some(2)"
+  /// // prints "Some(2)"
+  /// print(Some(2));
   /// ```
+  @literal
   const Some(this.value) : super._();
 
   @override
-  List<T> get props => [value];
+  @useResult
+  bool get isSome => true;
 
   @override
-  Iterable<T> get iterable => Iterable<T>.generate(1, (index) => value);
+  @useResult
+  bool isSomeAnd(bool Function(T value) condition) => condition(value);
 
   @override
-  T asPlain() => value;
+  @useResult
+  bool get isNone => false;
 
   @override
-  Future<void> whenSome(FutureOr<void> Function(T value) fn) async => fn(value);
+  @useResult
+  T get valueOrNull => value;
 
   @override
-  void whenSomeSync(void Function(T value) fn) => fn(value);
+  @useResult
+  Iterable<T> get iterable => Iterable.generate(1, (_) => value);
 
   @override
-  Future<void> whenNone(FutureOr<void> Function() fn) async {}
+  @useResult
+  bool contains(T value) => value == this.value;
 
   @override
-  void whenNoneSync(void Function() fn) {}
+  @useResult
+  T unwrap({String? msg}) => value;
 
   @override
-  Future<U> match<U>(FutureOr<U> Function(T value) fSome, FutureOr<U> Function() fNone) async {
-    return fSome(value);
+  @useResult
+  T unwrapOr(T defaultValue) => value;
+
+  @override
+  @useResult
+  T unwrapOrElse(T Function() calculateDefaultValue) => value;
+
+  @override
+  @useResult
+  Some<T> inspect(void Function(T value) inspect) {
+    inspect(value);
+
+    return this;
   }
 
   @override
-  U matchSync<U>(U Function(T value) fSome, U Function() fNone) => fSome(value);
+  @useResult
+  Some<U> map<U>(U Function(T value) map) => Some(map(value));
 
   @override
-  Future<T> unwrap({
-    String? msg,
-    FutureOr<T> Function()? ifNone,
-  }) async =>
-      value;
+  @useResult
+  U mapOr<U>(U Function(T value) map, U defaultValue) => map(value);
 
   @override
-  T unwrapSync({String? msg, T Function()? ifNone}) => value;
+  @useResult
+  U mapOrElse<U>(U Function(T value) map, U Function() calculateDefaultValue) => map(value);
 
   @override
-  void unwrapNone({String? msg}) {
-    throw StateError(
-      '${msg ?? 'tried to unwrap `Some` as `None`'}: $value',
-    );
+  @useResult
+  Ok<T, E> okOr<E>(E error) => Ok(value);
+
+  @override
+  @useResult
+  Ok<T, E> okOrElse<E>(E Function() calculateError) => Ok(value);
+
+  @override
+  @useResult
+  Option<U> and<U>(Option<U> other) => other;
+
+  @override
+  @useResult
+  Option<U> andThen<U>(Option<U> Function(T value) calculateOther) => calculateOther(value);
+
+  @override
+  @useResult
+  Some<T> or(Option<T> other) => this;
+
+  @override
+  @useResult
+  Some<T> orElse(Option<T> Function() calculateOther) => this;
+
+  @override
+  @useResult
+  // ignore: non_const_call_to_literal_constructor
+  Option<T> xor(Option<T> other) => other is None ? this : None();
+
+  @override
+  @useResult
+  // ignore: non_const_call_to_literal_constructor
+  Option<T> where(bool Function(T value) condition) => condition(value) ? this : None();
+
+  @override
+  @useResult
+  Option<U> whereType<U>() {
+    final value = this.value;
+
+    // ignore: non_const_call_to_literal_constructor
+    return value is U ? Some(value) : None();
   }
 
   @override
-  Future<Some<U>> map<U>(
-    FutureOr<U> Function(T value) map, {
-    FutureOr<U> Function()? ifNone,
-  }) async {
-    return Some(await map(value));
+  @useResult
+  Option<(T, U)> zip<U>(Option<U> other) {
+    return switch (other) {
+      Some(value: final otherValue) => Some((value, otherValue)),
+      // ignore: non_const_call_to_literal_constructor
+      None() => None(),
+    };
   }
 
   @override
-  Some<U> mapSync<U>(U Function(T value) map, {U Function()? ifNone}) {
-    return Some(map(value));
+  @useResult
+  Option<R> zipWith<U, R>(Option<U> other, R Function(T value, U otherValue) zip) {
+    return switch (other) {
+      Some(value: final otherValue) => Some(zip(value, otherValue)),
+      // ignore: non_const_call_to_literal_constructor
+      None() => None(),
+    };
   }
 
   @override
-  Future<Result<T, E>> okOr<E>(FutureOr<E> Function() ifNone) async {
-    return Ok(value);
+  @useResult
+  operator ==(covariant Option<T> other) {
+    return switch (other) {
+      Some(:final value) => value == this.value,
+      None() => false,
+    };
   }
 
   @override
-  Result<T, E> okOrSync<E>(E Function() ifNone) => Ok(value);
+  @useResult
+  int get hashCode => value.hashCode;
 
   @override
-  Future<Option<U>> and<U>(FutureOr<Option<U>> Function(T value) other) async {
-    return other(value);
-  }
-
-  @override
-  Option<U> andSync<U>(Option<U> Function(T value) other) => other(value);
-
-  @override
-  Future<Some<T>> or(FutureOr<Option<T>> Function() other) async => this;
-
-  @override
-  Some<T> orSync(Option<T> Function() other) => this;
-
-  @override
-  Option<T> xor(Option<T> other) => other is None ? this : None<T>();
-
-  @override
-  Future<Option<T>> where(FutureOr<bool> Function(T value) condition) async {
-    return await condition(value) ? this : None<T>();
-  }
-
-  @override
-  Option<T> whereSync(bool Function(T value) condition) {
-    return condition(value) ? this : None<T>();
-  }
-
-  @override
-  Option<U> whereType<U>() => value is U ? Some(value as U) : None<U>();
-
-  @override
-  Future<Option<Tuple2<T, U>>> zip<U>(FutureOr<Option<U>> Function(T value) other) async {
-    return (await other(value)).match(
-      (otherValue) => Some(Tuple2(value, otherValue)),
-      () => None<Tuple2<T, U>>(),
-    );
-  }
-
-  @override
-  Option<Tuple2<T, U>> zipSync<U>(Option<U> Function(T value) other) {
-    return other(value).matchSync(
-      (otherValue) => Some(Tuple2(value, otherValue)),
-      () => None<Tuple2<T, U>>(),
-    );
-  }
-
-  @override
-  Future<Option<R>> zipWith<U, R>(
-    FutureOr<Option<U>> Function(T value) other,
-    FutureOr<R> Function(T first, U second) zipper,
-  ) async {
-    return (await other(value)).match(
-      (otherValue) async => Some(await zipper(value, otherValue)),
-      () => None<R>(),
-    );
-  }
-
-  @override
-  Option<R> zipWithSync<U, R>(
-    Option<U> Function(T value) other,
-    R Function(T first, U second) zipper,
-  ) {
-    return other(value).matchSync(
-      (otherValue) => Some(zipper(value, otherValue)),
-      () => None<R>(),
-    );
-  }
-
-  @override
-  String toString([bool typeInfo = false]) {
-    return 'Some${typeInfo ? '<$T>' : ''}($value)';
-  }
+  @useResult
+  String toString() => 'Some($value)';
 }
 
 /// An [Option] with no value.
-@sealed
-class None<T> extends Option<T> {
+final class None<T> extends Option<T> {
   /// Creates an [Option] with no value.
   ///
   /// # Examples
   ///
   /// ```dart
-  /// print(None()); // "None"
+  /// // prints "None"
+  /// print(None<int>());
   /// ```
+  @literal
   const None() : super._();
 
   @override
-  List<Never> get props => [];
+  @useResult
+  bool get isSome => false;
 
   @override
-  Iterable<T> get iterable => Iterable<T>.empty();
+  @useResult
+  bool isSomeAnd(bool Function(T value) condition) => false;
 
   @override
-  Null asPlain() => null;
+  @useResult
+  bool get isNone => true;
 
   @override
-  Future<void> whenSome(FutureOr<void> Function(T value) fn) async {}
+  @useResult
+  Null get valueOrNull => null;
 
   @override
-  void whenSomeSync(void Function(T value) fn) {}
+  @useResult
+  Iterable<T> get iterable => const Iterable.empty();
 
   @override
-  Future<void> whenNone(FutureOr<void> Function() fn) async => fn();
+  @useResult
+  bool contains(T value) => false;
 
   @override
-  void whenNoneSync(void Function() fn) => fn();
+  @useResult
+  Never unwrap({String? msg}) => throw StateError(msg ?? 'tried to unwrap `None` as `Some`');
 
   @override
-  Future<U> match<U>(FutureOr<U> Function(T value) fSome, FutureOr<U> Function() fNone) async {
-    return fNone();
+  @useResult
+  T unwrapOr(T defaultValue) => defaultValue;
+
+  @override
+  @useResult
+  T unwrapOrElse(T Function() calculateDefaultValue) => calculateDefaultValue();
+
+  @override
+  @useResult
+  None<T> inspect(void Function(T value) inspect) => this;
+
+  @override
+  @useResult
+  // ignore: non_const_call_to_literal_constructor
+  None<U> map<U>(U Function(T value) map) => None();
+
+  @override
+  @useResult
+  U mapOr<U>(U Function(T value) map, U defaultValue) => defaultValue;
+
+  @override
+  @useResult
+  U mapOrElse<U>(U Function(T value) map, U Function() calculateDefaultValue) {
+    return calculateDefaultValue();
   }
 
   @override
-  U matchSync<U>(U Function(T value) fSome, U Function() fNone) => fNone();
+  @useResult
+  Err<T, E> okOr<E>(E error) => Err(error);
 
   @override
-  Future<T> unwrap({String? msg, FutureOr<T> Function()? ifNone}) async {
-    if (ifNone != null) {
-      return ifNone();
-    }
-
-    throw StateError(msg ?? 'tried to unwrap `None` as `Some`');
-  }
+  @useResult
+  Err<T, E> okOrElse<E>(E Function() calculateError) => Err(calculateError());
 
   @override
-  T unwrapSync({String? msg, T Function()? ifNone}) {
-    if (ifNone != null) {
-      return ifNone();
-    }
-
-    throw StateError(msg ?? 'tried to unwrap `None` as `Some`');
-  }
+  @useResult
+  // ignore: non_const_call_to_literal_constructor
+  None<U> and<U>(Option<U> other) => None();
 
   @override
-  void unwrapNone({String? msg}) {}
+  @useResult
+  // ignore: non_const_call_to_literal_constructor
+  None<U> andThen<U>(Option<U> Function(T value) calculateOther) => None();
 
   @override
-  Future<Option<U>> map<U>(
-    FutureOr<U> Function(T value) map, {
-    FutureOr<U> Function()? ifNone,
-  }) async {
-    return ifNone != null ? Some(await ifNone()) : None<U>();
-  }
+  @useResult
+  Option<T> or(Option<T> other) => other;
 
   @override
-  Option<U> mapSync<U>(U Function(T value) map, {U Function()? ifNone}) {
-    return ifNone != null ? Some(ifNone()) : None<U>();
-  }
+  @useResult
+  Option<T> orElse(Option<T> Function() calculateOther) => calculateOther();
 
   @override
-  Future<Result<T, E>> okOr<E>(FutureOr<E> Function() ifNone) async {
-    return Err(await ifNone());
-  }
-
-  @override
-  Result<T, E> okOrSync<E>(E Function() ifNone) => Err(ifNone());
-
-  @override
-  Future<None<U>> and<U>(FutureOr<Option<U>> Function(T value) other) async {
-    return None<U>();
-  }
-
-  @override
-  None<U> andSync<U>(Option<U> Function(T value) other) => None<U>();
-
-  @override
-  Future<Option<T>> or(FutureOr<Option<T>> Function() other) async => other();
-
-  @override
-  Option<T> orSync(Option<T> Function() other) => other();
-
-  @override
+  @useResult
   Option<T> xor(Option<T> other) => other is Some ? other : this;
 
   @override
-  Future<None<T>> where(FutureOr<bool> Function(T value) condition) async {
-    return this;
-  }
+  @useResult
+  None<T> where(bool Function(T value) condition) => this;
 
   @override
-  None<T> whereSync(bool Function(T value) condition) => this;
+  @useResult
+  // ignore: non_const_call_to_literal_constructor
+  None<U> whereType<U>() => None();
 
   @override
-  None<U> whereType<U>() => None<U>();
+  @useResult
+  // ignore: non_const_call_to_literal_constructor
+  None<(T, U)> zip<U>(Option<U> other) => None();
 
   @override
-  Future<None<Tuple2<T, U>>> zip<U>(FutureOr<Option<U>> Function(T value) other) async {
-    return None<Tuple2<T, U>>();
-  }
+  @useResult
+  // ignore: non_const_call_to_literal_constructor
+  None<R> zipWith<U, R>(Option<U> other, R Function(T value, U otherValue) zip) => None();
 
   @override
-  None<Tuple2<T, U>> zipSync<U>(Option<U> Function(T value) other) {
-    return None<Tuple2<T, U>>();
-  }
+  @useResult
+  operator ==(covariant Option<T> other) => other is None;
 
   @override
-  Future<None<R>> zipWith<U, R>(
-    FutureOr<Option<U>> Function(T value) other,
-    FutureOr<R> Function(T first, U second) zipper,
-  ) async {
-    return None<R>();
-  }
+  @useResult
+  int get hashCode => 0;
 
   @override
-  None<R> zipWithSync<U, R>(
-    Option<U> Function(T value) other,
-    R Function(T first, U second) zipper,
-  ) {
-    return None<R>();
-  }
-
-  @override
-  String toString([bool typeInfo = false]) => 'None${typeInfo ? '<$T>' : ''}';
+  @useResult
+  String toString() => 'None';
 }
