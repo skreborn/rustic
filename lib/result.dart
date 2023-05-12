@@ -703,8 +703,7 @@ final class Ok<T, E> extends Result<T, E> {
 
   @override
   @useResult
-  // ignore: non_const_call_to_literal_constructor
-  None<E> get err => None();
+  None<E> get err => None<E>();
 
   @override
   @useResult
@@ -865,8 +864,7 @@ final class Err<T, E> extends Result<T, E> {
 
   @override
   @useResult
-  // ignore: non_const_call_to_literal_constructor
-  None<T> get ok => None();
+  None<T> get ok => None<T>();
 
   @override
   @useResult

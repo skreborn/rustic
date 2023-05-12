@@ -5,10 +5,6 @@ analyzer:
     strict-casts: true
     strict-inference: true
     strict-raw-types: true
-  errors:
-    missing_required_param: error
-    missing_return: error
-    todo: ignore
 
 linter:
   rules:

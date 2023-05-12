@@ -100,18 +100,17 @@ sealed class Option<T> {
   /// ```
   @useResult
   static Future<Option<T>> collectAsync<T>(
-    FutureOr<Option<T>> Function(T Function(Option<T> option) check) collector,
+    FutureOr<Option<T>> Function(U Function<U>(Option<U> option) check) collector,
   ) async {
     try {
-      return await collector((option) {
+      return await collector(<U>(option) {
         return switch (option) {
           Some(:final value) => value,
           None() => throw const _CheckException()
         };
       });
     } on _CheckException {
-      // ignore: non_const_call_to_literal_constructor
-      return None();
+      return None<T>();
     }
   }
 
@@ -550,8 +549,7 @@ extension UnzippedOption<T, U> on Option<(T, U)> {
   (Option<T>, Option<U>) get unzipped {
     return switch (this) {
       Some(:final value) => (Some(value.$1), Some(value.$2)),
-      // ignore: non_const_call_to_literal_constructor
-      None() => (None(), None()),
+      None() => (None<T>(), None<U>()),
     };
   }
 }
@@ -578,8 +576,7 @@ extension TransposedOption<T, E> on Option<Result<T, E>> {
     return switch (this) {
       // ignore: unused_result
       Some(:final value) => value.map((value) => Some(value)),
-      // ignore: non_const_call_to_literal_constructor
-      None() => Ok(None()),
+      None() => Ok(None<T>()),
     };
   }
 }
@@ -603,8 +600,7 @@ extension FlattenedOption<T> on Option<Option<T>> {
   Option<T> get flattened {
     return switch (this) {
       Some(:final value) => value,
-      // ignore: non_const_call_to_literal_constructor
-      None() => None(),
+      None() => None<T>(),
     };
   }
 }
@@ -714,21 +710,18 @@ final class Some<T> extends Option<T> {
 
   @override
   @useResult
-  // ignore: non_const_call_to_literal_constructor
-  Option<T> xor(Option<T> other) => other is None ? this : None();
+  Option<T> xor(Option<T> other) => other is None ? this : None<T>();
 
   @override
   @useResult
-  // ignore: non_const_call_to_literal_constructor
-  Option<T> where(bool Function(T value) condition) => condition(value) ? this : None();
+  Option<T> where(bool Function(T value) condition) => condition(value) ? this : None<T>();
 
   @override
   @useResult
   Option<U> whereType<U>() {
     final value = this.value;
 
-    // ignore: non_const_call_to_literal_constructor
-    return value is U ? Some(value) : None();
+    return value is U ? Some(value) : None<U>();
   }
 
   @override
@@ -736,8 +729,7 @@ final class Some<T> extends Option<T> {
   Option<(T, U)> zip<U>(Option<U> other) {
     return switch (other) {
       Some(value: final otherValue) => Some((value, otherValue)),
-      // ignore: non_const_call_to_literal_constructor
-      None() => None(),
+      None() => const None<(T, U)>(),
     };
   }
 
@@ -746,8 +738,7 @@ final class Some<T> extends Option<T> {
   Option<R> zipWith<U, R>(Option<U> other, R Function(T value, U otherValue) zip) {
     return switch (other) {
       Some(value: final otherValue) => Some(zip(value, otherValue)),
-      // ignore: non_const_call_to_literal_constructor
-      None() => None(),
+      None() => None<R>(),
     };
   }
 
@@ -824,8 +815,7 @@ final class None<T> extends Option<T> {
 
   @override
   @useResult
-  // ignore: non_const_call_to_literal_constructor
-  None<U> map<U>(U Function(T value) map) => None();
+  None<U> map<U>(U Function(T value) map) => None<U>();
 
   @override
   @useResult
@@ -847,13 +837,11 @@ final class None<T> extends Option<T> {
 
   @override
   @useResult
-  // ignore: non_const_call_to_literal_constructor
-  None<U> and<U>(Option<U> other) => None();
+  None<U> and<U>(Option<U> other) => None<U>();
 
   @override
   @useResult
-  // ignore: non_const_call_to_literal_constructor
-  None<U> andThen<U>(Option<U> Function(T value) calculateOther) => None();
+  None<U> andThen<U>(Option<U> Function(T value) calculateOther) => None<U>();
 
   @override
   @useResult
@@ -873,18 +861,15 @@ final class None<T> extends Option<T> {
 
   @override
   @useResult
-  // ignore: non_const_call_to_literal_constructor
-  None<U> whereType<U>() => None();
+  None<U> whereType<U>() => None<U>();
 
   @override
   @useResult
-  // ignore: non_const_call_to_literal_constructor
-  None<(T, U)> zip<U>(Option<U> other) => None();
+  None<(T, U)> zip<U>(Option<U> other) => const None<(T, U)>();
 
   @override
   @useResult
-  // ignore: non_const_call_to_literal_constructor
-  None<R> zipWith<U, R>(Option<U> other, R Function(T value, U otherValue) zip) => None();
+  None<R> zipWith<U, R>(Option<U> other, R Function(T value, U otherValue) zip) => None<R>();
 
   @override
   @useResult
