@@ -501,21 +501,6 @@ sealed class Option<T> {
   /// ```
   @useResult
   Option<R> zipWith<U, R>(Option<U> other, R Function(T value, U otherValue) zip);
-
-  /// Returns the string representation of `this`.
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// // prints "Some(2)"
-  /// print(Some(2).toString());
-  ///
-  /// // prints "None"
-  /// print(None<int>().toString());
-  /// ```
-  @override
-  @useResult
-  String toString();
 }
 
 /// An extension on any nullable object.

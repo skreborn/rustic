@@ -560,21 +560,6 @@ sealed class Result<T, E> {
   /// ```
   @useResult
   Result<T, F> orElse<F>(Result<T, F> Function(E error) calculateOther);
-
-  /// Returns the string representation of `this`.
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// // prints "Ok(2)"
-  /// print(Ok<int, String>(2).toString());
-  ///
-  /// // prints "Err(error)"
-  /// print(Err<int, String>('error').toString());
-  /// ```
-  @override
-  @useResult
-  String toString();
 }
 
 /// An extension on [Result] that is guaranteed to be an [Ok].
