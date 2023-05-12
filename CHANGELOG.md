@@ -1,3 +1,10 @@
+## 0.5.1
+
+This is a hotfix release to restore the flexibility of the collect functions that was accidentally
+dropped in the previous version.
+
+- Make collect functions generic over the value type.
+
 ## 0.5.0
 
 This is the largest release since the initial one, adding, removing, or otherwise changing countless
