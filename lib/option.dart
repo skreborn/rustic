@@ -717,7 +717,8 @@ final class Some<T> extends Option<T> {
   Option<(T, U)> zip<U>(Option<U> other) {
     return switch (other) {
       Some(value: final otherValue) => Some((value, otherValue)),
-      None() => const None<(T, U)>(),
+      // ignore: non_const_call_to_literal_constructor
+      None() => None<(T, U)>(),
     };
   }
 
@@ -853,7 +854,8 @@ final class None<T> extends Option<T> {
 
   @override
   @useResult
-  None<(T, U)> zip<U>(Option<U> other) => const None<(T, U)>();
+  // ignore: non_const_call_to_literal_constructor
+  None<(T, U)> zip<U>(Option<U> other) => None<(T, U)>();
 
   @override
   @useResult
