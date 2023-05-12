@@ -21,7 +21,7 @@ void main() {
       test('collect', () {
         final none = Option.collect<int>((check) {
           final first = check(const Some(2));
-          final second = check(const None());
+          final second = check(const None<int>());
 
           return Some(first + second);
         });
@@ -41,7 +41,7 @@ void main() {
       test('collectAsync', () {
         final none = Option.collectAsync<int>((check) async {
           final first = check(await Future.value(const Some(2)));
-          final second = check(await Future.value(const None()));
+          final second = check(await Future.value(const None<int>()));
 
           return Some(first + second);
         });

@@ -21,7 +21,7 @@ void main() {
       test('collect', () {
         final err = Result.collect<int, String>((check) {
           final first = check(const Ok(2));
-          final second = check(const Err('error'));
+          final second = check(const Err<int, String>('error'));
 
           return Ok(first + second);
         });
@@ -41,7 +41,7 @@ void main() {
       test('collectAsync', () {
         final err = Result.collectAsync<int, String>((check) async {
           final first = check(await Future.value(const Ok(2)));
-          final second = check(await Future.value(const Err('error')));
+          final second = check(await Future.value(const Err<int, String>('error')));
 
           return Ok(first + second);
         });

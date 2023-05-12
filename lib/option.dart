@@ -55,7 +55,7 @@ sealed class Option<T> {
   ///   final first = check(const Some(2));
   ///
   ///   // This fails the check and no value is returned from the collector
-  ///   final second = check(const None());
+  ///   final second = check(const None<int>());
   ///
   ///   // This is never reached
   ///   return Some(first + second);
@@ -66,18 +66,17 @@ sealed class Option<T> {
   /// ```
   @useResult
   static Option<T> collect<T>(
-    Option<T> Function(T Function(Option<T> option) check) collector,
+    Option<T> Function(U Function<U>(Option<U> option) check) collector,
   ) {
     try {
-      return collector((option) {
+      return collector(<U>(option) {
         return switch (option) {
           Some(:final value) => value,
           None() => throw const _CheckException()
         };
       });
     } on _CheckException {
-      // ignore: non_const_call_to_literal_constructor
-      return None();
+      return None<T>();
     }
   }
 
@@ -93,7 +92,7 @@ sealed class Option<T> {
   ///   final first = check(await Future.value(const Some(2)));
   ///
   ///   // This fails the check and no value is returned from the collector
-  ///   final second = check(await Future.value(const None()));
+  ///   final second = check(await Future.value(const None<int>()));
   ///
   ///   // This is never reached
   ///   return Some(first + second);

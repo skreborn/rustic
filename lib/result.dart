@@ -59,7 +59,7 @@ sealed class Result<T, E> {
   ///   final first = check(Ok(2));
   ///
   ///   // This fails the check and the error is returned from the collector
-  ///   final second = check(Err('error'));
+  ///   final second = check(Err<int, String>('error'));
   ///
   ///   // This is never reached
   ///   return Ok(first + second);
@@ -70,10 +70,10 @@ sealed class Result<T, E> {
   /// ```
   @useResult
   static Result<T, E> collect<T, E>(
-    Result<T, E> Function(T Function(Result<T, E> result) check) collector,
+    Result<T, E> Function(U Function<U>(Result<U, E> result) check) collector,
   ) {
     try {
-      return collector((result) {
+      return collector(<U>(result) {
         return switch (result) {
           Ok(:final value) => value,
           Err(:final error) => throw _CheckException<T, E>(Err(error))
@@ -96,7 +96,7 @@ sealed class Result<T, E> {
   ///   final first = check(await Future.value(Ok(2)));
   ///
   ///   // This fails the check and the error is returned from the collector
-  ///   final second = check(await Future.value(Err('error')));
+  ///   final second = check(await Future.value(Err<int, String>('error')));
   ///
   ///   // This is never reached
   ///   return Ok(first + second);
@@ -107,10 +107,10 @@ sealed class Result<T, E> {
   /// ```
   @useResult
   static Future<Result<T, E>> collectAsync<T, E>(
-    FutureOr<Result<T, E>> Function(T Function(Result<T, E> result) check) collector,
+    FutureOr<Result<T, E>> Function(U Function<U>(Result<U, E> result) check) collector,
   ) async {
     try {
-      return await collector((result) {
+      return await collector(<U>(result) {
         return switch (result) {
           Ok(:final value) => value,
           Err(:final error) => throw _CheckException<T, E>(Err(error))
