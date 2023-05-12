@@ -56,10 +56,10 @@ sealed class Result<T, E> {
   /// ```dart
   /// final collected = Result.collect<int, String>((check) {
   ///   // This passes the check and `first` gets the value `2`
-  ///   final first = check(Ok(2));
+  ///   final first = check(const Ok(2));
   ///
   ///   // This fails the check and the error is returned from the collector
-  ///   final second = check(Err<int, String>('error'));
+  ///   final second = check(const Err<int, String>('error'));
   ///
   ///   // This is never reached
   ///   return Ok(first + second);
@@ -93,10 +93,10 @@ sealed class Result<T, E> {
   /// ```dart
   /// final collected = await Result.collectAsync<int, String>((check) async {
   ///   // This passes the check and `first` gets the value `2`
-  ///   final first = check(await Future.value(Ok(2)));
+  ///   final first = check(await Future.value(const Ok(2)));
   ///
   ///   // This fails the check and the error is returned from the collector
-  ///   final second = check(await Future.value(Err<int, String>('error')));
+  ///   final second = check(await Future.value(const Err<int, String>('error')));
   ///
   ///   // This is never reached
   ///   return Ok(first + second);
@@ -149,10 +149,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "true"
-  /// print(Ok<int, String>(2).isOk);
+  /// print(const Ok<int, String>(2).isOk);
   ///
   /// // prints "false"
-  /// print(Err<int, String>('error').isOk);
+  /// print(const Err<int, String>('error').isOk);
   /// ```
   @useResult
   bool get isOk;
@@ -163,10 +163,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "true"
-  /// print(Ok<int, String>(2).isOkAnd((value) => value == 2));
+  /// print(const Ok<int, String>(2).isOkAnd((value) => value == 2));
   ///
   /// // prints "false"
-  /// print(Err<int, String>('error').isOkAnd((value) => value == 2));
+  /// print(const Err<int, String>('error').isOkAnd((value) => value == 2));
   /// ```
   @useResult
   bool isOkAnd(bool Function(T value) condition);
@@ -177,10 +177,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "false"
-  /// print(Ok<int, String>(2).isErr);
+  /// print(const Ok<int, String>(2).isErr);
   ///
   /// // prints "true"
-  /// print(Err<int, String>().isErr);
+  /// print(const Err<int, String>('error').isErr);
   /// ```
   @useResult
   bool get isErr;
@@ -191,10 +191,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "false"
-  /// print(Ok<int, String>(2).isErrAnd((value) => value == 'error'));
+  /// print(const Ok<int, String>(2).isErrAnd((value) => value == 'error'));
   ///
   /// // prints "true"
-  /// print(Err<int, String>('error').isErrAnd((value) => value == 'error'));
+  /// print(const Err<int, String>('error').isErrAnd((value) => value == 'error'));
   /// ```
   @useResult
   bool isErrAnd(bool Function(E error) condition);
@@ -205,10 +205,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "Some(2)"
-  /// print(Ok<int, String>(2).ok);
+  /// print(const Ok<int, String>(2).ok);
   ///
   /// // prints "None"
-  /// print(Err<int, String>('error').ok);
+  /// print(const Err<int, String>('error').ok);
   /// ```
   @useResult
   Option<T> get ok;
@@ -219,10 +219,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "None"
-  /// print(Ok<int, String>(2).err);
+  /// print(const Ok<int, String>(2).err);
   ///
   /// // prints "Some(error)"
-  /// print(Err<int, String>('error').err);
+  /// print(const Err<int, String>('error').err);
   /// ```
   @useResult
   Option<E> get err;
@@ -233,10 +233,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "2"
-  /// print(Ok<int, String>(2).valueOrNull);
+  /// print(const Ok<int, String>(2).valueOrNull);
   ///
   /// // prints "null"
-  /// print(Err<int, String>('error').valueOrNull);
+  /// print(const Err<int, String>('error').valueOrNull);
   /// ```
   @useResult
   T? get valueOrNull;
@@ -247,10 +247,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "null"
-  /// print(Ok<int, String>(2).errorOrNull);
+  /// print(const Ok<int, String>(2).errorOrNull);
   ///
   /// // prints "error"
-  /// print(Err<int, String>('error').errorOrNull);
+  /// print(const Err<int, String>('error').errorOrNull);
   /// ```
   @useResult
   E? get errorOrNull;
@@ -261,10 +261,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "[2]"
-  /// print(Ok<int, String>(2).iterable.toList());
+  /// print(const Ok<int, String>(2).iterable.toList());
   ///
   /// // prints "[]"
-  /// print(Err<int, String>('error').iterable.toList());
+  /// print(const Err<int, String>('error').iterable.toList());
   /// ```
   @useResult
   Iterable<T> get iterable;
@@ -275,10 +275,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "true"
-  /// print(Ok<int, String>(2).contains(2));
+  /// print(const Ok<int, String>(2).contains(2));
   ///
   /// // prints "false"
-  /// print(Err<int, String>('error').contains(2));
+  /// print(const Err<int, String>('error').contains(2));
   /// ```
   @useResult
   bool contains(T value);
@@ -289,10 +289,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "false"
-  /// print(Ok<int, String>(2).containsErr('error'));
+  /// print(const Ok<int, String>(2).containsErr('error'));
   ///
   /// // prints "true"
-  /// print(Err<int, String>('error').containsErr('error'));
+  /// print(const Err<int, String>('error').containsErr('error'));
   /// ```
   @useResult
   bool containsErr(E error);
@@ -307,10 +307,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "2"
-  /// print(Ok<int, String>(2).unwrap());
+  /// print(const Ok<int, String>(2).unwrap());
   ///
   /// // throws a `StateError`
-  /// print(Err<int, String>('error').unwrap());
+  /// print(const Err<int, String>('error').unwrap());
   /// ```
   @useResult
   T unwrap({String? msg});
@@ -321,10 +321,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "2"
-  /// print(Ok<int, String>(2).unwrapOr(3));
+  /// print(const Ok<int, String>(2).unwrapOr(3));
   ///
   /// // prints "3"
-  /// print(Err<int, String>('error').unwrapOr(3));
+  /// print(const Err<int, String>('error').unwrapOr(3));
   /// ```
   @useResult
   T unwrapOr(T defaultValue);
@@ -335,10 +335,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "2"
-  /// print(Ok<int, String>(2).unwrapOrElse((_) => 3));
+  /// print(const Ok<int, String>(2).unwrapOrElse((_) => 3));
   ///
   /// // prints "3"
-  /// print(Err<int, String>('error').unwrapOrElse((_) => 3));
+  /// print(const Err<int, String>('error').unwrapOrElse((_) => 3));
   /// ```
   @useResult
   T unwrapOrElse(T Function(E error) calculateDefaultValue);
@@ -353,10 +353,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // throws a `StateError`
-  /// print(Ok<int, String>(2).unwrapErr());
+  /// print(const Ok<int, String>(2).unwrapErr());
   ///
   /// // prints "error"
-  /// print(Err<int, String>('error').unwrapErr());
+  /// print(const Err<int, String>('error').unwrapErr());
   /// ```
   @useResult
   E unwrapErr({String? msg});
@@ -367,10 +367,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "other"
-  /// print(Ok<int, String>(2).unwrapErrOr('other'));
+  /// print(const Ok<int, String>(2).unwrapErrOr('other'));
   ///
   /// // prints "error"
-  /// print(Err<int, String>('error').unwrapErrOr('other'));
+  /// print(const Err<int, String>('error').unwrapErrOr('other'));
   /// ```
   @useResult
   E unwrapErrOr(E defaultError);
@@ -381,10 +381,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "other"
-  /// print(Ok<int, String>(2).unwrapErrOrElse((_) => 'other'));
+  /// print(const Ok<int, String>(2).unwrapErrOrElse((_) => 'other'));
   ///
   /// // prints "error"
-  /// print(Err<int, String>('error').unwrapErrOrElse((_) => 'other'));
+  /// print(const Err<int, String>('error').unwrapErrOrElse((_) => 'other'));
   /// ```
   @useResult
   E unwrapErrOrElse(E Function(T value) calculateDefaultError);
@@ -395,10 +395,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "2"
-  /// Ok<int, String>(2).inspect((value) => print(value)));
+  /// const Ok<int, String>(2).inspect(print);
   ///
   /// // prints nothing
-  /// Err<int, String>('error').inspect((value) => print(value)));
+  /// const Err<int, String>('error').inspect(print);
   /// ```
   @useResult
   Result<T, E> inspect(void Function(T value) inspect);
@@ -409,10 +409,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints nothing
-  /// Ok<int, String>(2).inspectErr((error) => print(error)));
+  /// const Ok<int, String>(2).inspectErr(print);
   ///
   /// // prints "error"
-  /// Err<int, String>('error').inspectErr((error) => print(error)));
+  /// const Err<int, String>('error').inspectErr(print);
   /// ```
   @useResult
   Result<T, E> inspectErr(void Function(E error) inspect);
@@ -423,10 +423,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "Ok(4)"
-  /// print(Ok<int, String>(2).map((value) => value * 2));
+  /// print(const Ok<int, String>(2).map((value) => value * 2));
   ///
   /// // prints "Err(error)"
-  /// print(Err<int, String>('error').map((value) => value * 2));
+  /// print(const Err<int, String>('error').map((value) => value * 2));
   /// ```
   @useResult
   Result<U, E> map<U>(U Function(T value) map);
@@ -437,10 +437,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "4"
-  /// print(Ok<int, String>(2).mapOr((value) => value * 2), 0);
+  /// print(const Ok<int, String>(2).mapOr((value) => value * 2, 0));
   ///
   /// // prints "0"
-  /// print(Err<int, String>('error').mapOr((value) => value * 2), 0);
+  /// print(const Err<int, String>('error').mapOr((value) => value * 2, 0));
   /// ```
   @useResult
   U mapOr<U>(U Function(T value) map, U defaultValue);
@@ -452,10 +452,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "4"
-  /// print(Ok<int, String>(2).mapOrElse((value) => value * 2), (_) => 0);
+  /// print(const Ok<int, String>(2).mapOrElse((value) => value * 2, (_) => 0));
   ///
   /// // prints "0"
-  /// print(Err<int, String>('error').mapOrElse((value) => value * 2), (_) => 0);
+  /// print(const Err<int, String>('error').mapOrElse((value) => value * 2, (_) => 0));
   /// ```
   @useResult
   U mapOrElse<U>(U Function(T value) map, U Function(E error) calculateDefaultValue);
@@ -466,10 +466,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "Ok(2)"
-  /// print(Ok<int, String>(2).mapErr((error) => '$error!'));
+  /// print(const Ok<int, String>(2).mapErr((error) => '$error!'));
   ///
   /// // prints "Err(error!)"
-  /// print(Err<int, String>('error').mapErr((error) => '$error!'));
+  /// print(const Err<int, String>('error').mapErr((error) => '$error!'));
   /// ```
   @useResult
   Result<T, F> mapErr<F>(F Function(E error) map);
@@ -480,10 +480,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "4"
-  /// print(Ok<int, String>(2).mapErrOr((error) => '$error!'), 'other');
+  /// print(const Ok<int, String>(2).mapErrOr((error) => '$error!', 'other'));
   ///
   /// // prints "0"
-  /// print(Err<int, String>('error').mapErrOr((error) => '$error!'), 'other');
+  /// print(const Err<int, String>('error').mapErrOr((error) => '$error!', 'other'));
   /// ```
   @useResult
   F mapErrOr<F>(F Function(E error) map, F defaultError);
@@ -495,10 +495,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "4"
-  /// print(Ok<int, String>(2).mapErrOrElse((error) => '$error!'), (_) => 'other');
+  /// print(const Ok<int, String>(2).mapErrOrElse((error) => '$error!', (_) => 'other'));
   ///
   /// // prints "0"
-  /// print(Err<int, String>('error').mapErrOrElse((error) => '$error!'), (_) => 'other');
+  /// print(const Err<int, String>('error').mapErrOrElse((error) => '$error!', (_) => 'other'));
   /// ```
   @useResult
   F mapErrOrElse<F>(F Function(E error) map, F Function(T value) calculateDefaultError);
@@ -509,10 +509,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "Ok(3)"
-  /// print(Ok<int, String>(2).and(Ok(3)));
+  /// print(const Ok<int, String>(2).and(const Ok(3)));
   ///
   /// // prints "Err(error)"
-  /// print(Err<int, String>('error').and(Ok(3)));
+  /// print(const Err<int, String>('error').and(const Ok(3)));
   /// ```
   @useResult
   Result<U, E> and<U>(Result<U, E> other);
@@ -524,10 +524,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "Ok(3)"
-  /// print(Ok<int, String>(2).andThen((value) => Ok(3)));
+  /// print(const Ok<int, String>(2).andThen((value) => const Ok(3)));
   ///
   /// // prints "Err(error)"
-  /// print(Err<int, String>('error').andThen((value) => Ok(3)));
+  /// print(const Err<int, String>('error').andThen((value) => const Ok(3)));
   /// ```
   @useResult
   Result<U, E> andThen<U>(Result<U, E> Function(T value) calculateOther);
@@ -538,10 +538,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "Ok(2)"
-  /// print(Ok<int, String>(2).or(Ok(3)));
+  /// print(const Ok<int, String>(2).or(const Ok<int, String>(3)));
   ///
   /// // prints "Ok(3)"
-  /// print(Err<int, String>('error').or(Ok(3)));
+  /// print(const Err<int, String>('error').or(const Ok<int, String>(3)));
   /// ```
   @useResult
   Result<T, F> or<F>(Result<T, F> other);
@@ -553,10 +553,10 @@ sealed class Result<T, E> {
   ///
   /// ```dart
   /// // prints "Ok(2)"
-  /// print(Ok<int, String>(2).orElse((_) => Ok(3)));
+  /// print(const Ok<int, String>(2).orElse((_) => const Ok<int, String>(3)));
   ///
   /// // prints "Ok(3)"
-  /// print(Err<int, String>('error').orElse((_) => Ok(3)));
+  /// print(const Err<int, String>('error').orElse((_) => const Ok<int, String>(3)));
   /// ```
   @useResult
   Result<T, F> orElse<F>(Result<T, F> Function(E error) calculateOther);
@@ -573,7 +573,7 @@ extension SuccessfulResult<T> on Result<T, Never> {
   ///
   /// ```dart
   /// // prints "2"
-  /// print(Ok<int, String>(2).value);
+  /// print(const Ok<int, String>(2).value);
   /// ```
   @useResult
   T get value => ok.unwrap();
@@ -590,7 +590,7 @@ extension ErroneousResult<E> on Result<Never, E> {
   ///
   /// ```dart
   /// // prints "error"
-  /// print(Err<int, String>('error').error);
+  /// print(const Err<int, String>('error').error);
   /// ```
   @useResult
   E get error => err.unwrap();
@@ -608,10 +608,10 @@ extension TransposedResult<T, E> on Result<Option<T>, E> {
   ///
   /// ```dart
   /// // prints "Some(Ok(2))"
-  /// print(Ok<Option<int>, String>(Some(2)).transposed);
+  /// print(const Ok<Option<int>, String>(Some(2)).transposed);
   ///
-  /// // prints "Some(Err(2))"
-  /// print(Err<Option<int>, String>(2).transposed);
+  /// // prints "Some(Err('error'))"
+  /// print(const Err<Option<int>, String>('error').transposed);
   /// ```
   @useResult
   Option<Result<T, E>> get transposed {
@@ -633,10 +633,10 @@ extension FlattenedResult<T, E> on Result<Result<T, E>, E> {
   ///
   /// ```dart
   /// // prints "Ok(2)"
-  /// print(Ok<Result<int, String>, String>(Ok(2)).flattened);
+  /// print(const Ok<Result<int, String>, String>(Ok(2)).flattened);
   ///
   /// // prints "Err(error)"
-  /// print(Ok<Result<int, String>, String>(Err('error')).flattened);
+  /// print(const Ok<Result<int, String>, String>(Err('error')).flattened);
   /// ```
   @useResult
   Result<T, E> get flattened {
@@ -655,7 +655,7 @@ final class Ok<T, E> extends Result<T, E> {
   ///
   /// ```dart
   /// // prints "2"
-  /// print(Ok<int, String>(2).value);
+  /// print(const Ok<int, String>(2).value);
   /// ```
   final T value;
 
@@ -665,7 +665,7 @@ final class Ok<T, E> extends Result<T, E> {
   ///
   /// ```dart
   /// // prints "Ok(2)"
-  /// print(Ok<int, String>(2));
+  /// print(const Ok<int, String>(2));
   /// ```
   @literal
   const Ok(this.value) : super._();
@@ -820,7 +820,7 @@ final class Err<T, E> extends Result<T, E> {
   ///
   /// ```dart
   /// // prints "error"
-  /// print(Err<int, String>('error').error);
+  /// print(const Err<int, String>('error').error);
   /// ```
   final E error;
 
@@ -830,7 +830,7 @@ final class Err<T, E> extends Result<T, E> {
   ///
   /// ```dart
   /// // prints "Err(error)"
-  /// print(Err<int, String>('error'));
+  /// print(const Err<int, String>('error'));
   /// ```
   @literal
   const Err(this.error) : super._();

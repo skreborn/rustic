@@ -138,7 +138,7 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "Some(2)"
-  /// print(Option.some(2));
+  /// print(const Option.some(2));
   /// ```
   @literal
   const factory Option.some(T value) = Some<T>;
@@ -149,7 +149,7 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "None"
-  /// print(Option<int>.none());
+  /// print(const Option<int>.none());
   /// ```
   @literal
   const factory Option.none() = None<T>;
@@ -160,10 +160,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "true"
-  /// print(Some(2).isSome);
+  /// print(const Some(2).isSome);
   ///
   /// // prints "false"
-  /// print(None<int>().isSome);
+  /// print(const None<int>().isSome);
   /// ```
   @useResult
   bool get isSome;
@@ -174,10 +174,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "true"
-  /// print(Some(2).isSomeAnd((value) => value == 2));
+  /// print(const Some(2).isSomeAnd((value) => value == 2));
   ///
   /// // prints "false"
-  /// print(None<int>().isSomeAnd((value) => value == 2));
+  /// print(const None<int>().isSomeAnd((value) => value == 2));
   /// ```
   @useResult
   bool isSomeAnd(bool Function(T value) condition);
@@ -188,10 +188,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "false"
-  /// print(Some(2).isNone);
+  /// print(const Some(2).isNone);
   ///
   /// // prints "true"
-  /// print(None<int>().isNone);
+  /// print(const None<int>().isNone);
   /// ```
   @useResult
   bool get isNone;
@@ -202,10 +202,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "2"
-  /// print(Some(2).valueOrNull);
+  /// print(const Some(2).valueOrNull);
   ///
   /// // prints "null"
-  /// print(None<int>().valueOrNull);
+  /// print(const None<int>().valueOrNull);
   /// ```
   @useResult
   T? get valueOrNull;
@@ -216,10 +216,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "[2]"
-  /// print(Some(2).iterable.toList());
+  /// print(const Some(2).iterable.toList());
   ///
   /// // prints "[]"
-  /// print(None<int>().iterable.toList());
+  /// print(const None<int>().iterable.toList());
   /// ```
   @useResult
   Iterable<T> get iterable;
@@ -230,10 +230,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "true"
-  /// print(Some(2).contains(2));
+  /// print(const Some(2).contains(2));
   ///
   /// // prints "false"
-  /// print(None<int>().contains(2));
+  /// print(const None<int>().contains(2));
   /// ```
   @useResult
   bool contains(T value);
@@ -248,10 +248,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "2"
-  /// print(Some(2).unwrap());
+  /// print(const Some(2).unwrap());
   ///
   /// // throws a `StateError`
-  /// print(None<int>().unwrap());
+  /// print(const None<int>().unwrap());
   /// ```
   @useResult
   T unwrap({String? msg});
@@ -262,10 +262,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "2"
-  /// print(Some(2).unwrapOr(3));
+  /// print(const Some(2).unwrapOr(3));
   ///
   /// // prints "3"
-  /// print(None<int>().unwrapOr(3));
+  /// print(const None<int>().unwrapOr(3));
   /// ```
   @useResult
   T unwrapOr(T defaultValue);
@@ -276,10 +276,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "2"
-  /// print(Some(2).unwrapOrElse(() => 3));
+  /// print(const Some(2).unwrapOrElse(() => 3));
   ///
   /// // prints "3"
-  /// print(None<int>().unwrapOrElse(() => 3));
+  /// print(const None<int>().unwrapOrElse(() => 3));
   /// ```
   @useResult
   T unwrapOrElse(T Function() calculateDefaultValue);
@@ -290,10 +290,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "2"
-  /// Some(2).inspect((value) => print(value)));
+  /// const Some(2).inspect(print);
   ///
   /// // prints nothing
-  /// None<int>().inspect((value) => print(value)));
+  /// const None<int>().inspect(print);
   /// ```
   @useResult
   Option<T> inspect(void Function(T value) inspect);
@@ -304,10 +304,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "Some(some: 2)"
-  /// print(Some(2).map((value) => 'some: $value'));
+  /// print(const Some(2).map((value) => 'some: $value'));
   ///
   /// // prints "None"
-  /// print(None<int>().map((value) => 'some: $value'));
+  /// print(const None<int>().map((value) => 'some: $value'));
   /// ```
   @useResult
   Option<U> map<U>(U Function(T value) map);
@@ -318,10 +318,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "some: 2"
-  /// print(Some(2).mapOr((value) => 'some: $value'), 'none');
+  /// print(const Some(2).mapOr((value) => 'some: $value', 'none'));
   ///
   /// // prints "none"
-  /// print(None<int>().mapOr((value) => 'some: $value'), 'none');
+  /// print(const None<int>().mapOr((value) => 'some: $value', 'none'));
   /// ```
   @useResult
   U mapOr<U>(U Function(T value) map, U defaultValue);
@@ -333,10 +333,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "some: 2"
-  /// print(Some(2).mapOrElse((value) => 'some: $value'), () => 'none');
+  /// print(const Some(2).mapOrElse((value) => 'some: $value', () => 'none'));
   ///
   /// // prints "none"
-  /// print(None<int>().mapOrElse((value) => 'some: $value'), () => 'none');
+  /// print(const None<int>().mapOrElse((value) => 'some: $value', () => 'none'));
   /// ```
   @useResult
   U mapOrElse<U>(U Function(T value) map, U Function() calculateDefaultValue);
@@ -348,10 +348,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "Ok(2)"
-  /// print(Some(2).okOr('none');
+  /// print(const Some(2).okOr('none'));
   ///
   /// // prints "Err(none)"
-  /// print(None<int>().okOr('none');
+  /// print(const None<int>().okOr('none'));
   /// ```
   @useResult
   Result<T, E> okOr<E>(E error);
@@ -363,10 +363,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "Ok(2)"
-  /// print(Some(2).okOrElse(() => 'none');
+  /// print(const Some(2).okOrElse(() => 'none'));
   ///
   /// // prints "Err(none)"
-  /// print(None<int>().okOrElse(() => 'none');
+  /// print(const None<int>().okOrElse(() => 'none'));
   /// ```
   @useResult
   Result<T, E> okOrElse<E>(E Function() calculateError);
@@ -377,10 +377,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "Some(3)"
-  /// print(Some(2).and(Some(3)));
+  /// print(const Some(2).and(const Some(3)));
   ///
   /// // prints "None"
-  /// print(None<int>().and(Some(3)));
+  /// print(const None<int>().and(const Some(3)));
   /// ```
   @useResult
   Option<U> and<U>(Option<U> other);
@@ -391,10 +391,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "Some(3)"
-  /// print(Some(2).andThen((value) => Some(3)));
+  /// print(const Some(2).andThen((value) => const Some(3)));
   ///
   /// // prints "None"
-  /// print(None<int>().andThen((value) => Some(3)));
+  /// print(const None<int>().andThen((value) => const Some(3)));
   /// ```
   @useResult
   Option<U> andThen<U>(Option<U> Function(T value) calculateOther);
@@ -405,10 +405,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "Some(2)"
-  /// print(Some(2).or(Some(3)));
+  /// print(const Some(2).or(const Some(3)));
   ///
   /// // prints "Some(3)"
-  /// print(None<int>().or(Some(3)));
+  /// print(const None<int>().or(const Some(3)));
   /// ```
   @useResult
   Option<T> or(Option<T> other);
@@ -420,10 +420,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "Some(2)"
-  /// print(Some(2).orElse(() => Some(3)));
+  /// print(const Some(2).orElse(() => const Some(3)));
   ///
   /// // prints "Some(3)"
-  /// print(None<int>().orElse(() => Some(3)));
+  /// print(const None<int>().orElse(() => const Some(3)));
   /// ```
   @useResult
   Option<T> orElse(Option<T> Function() calculateOther);
@@ -435,10 +435,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "None"
-  /// print(Some(2).xor(Some(3)))
+  /// print(const Some(2).xor(const Some(3)));
   ///
   /// // prints "Some(2)";
-  /// print(Some(2).xor(None()));
+  /// print(const Some(2).xor(const None()));
   /// ```
   @useResult
   Option<T> xor(Option<T> other);
@@ -450,10 +450,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "Some(2)"
-  /// print(Some(2).where((value) => true));
+  /// print(const Some(2).where((value) => true));
   ///
   /// // prints "None"
-  /// print(Some(2).where((value) => false));
+  /// print(const Some(2).where((value) => false));
   /// ```
   @useResult
   Option<T> where(bool Function(T value) condition);
@@ -465,10 +465,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "Some(2)"
-  /// print(Some(2).whereType<int>());
+  /// print(const Some(2).whereType<int>());
   ///
   /// // prints "None"
-  /// print(Some(2).whereType<bool>());
+  /// print(const Some(2).whereType<bool>());
   /// ```
   @useResult
   Option<U> whereType<U>();
@@ -479,10 +479,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "Some((2, some))"
-  /// print(Some(2).zip(Some('some')));
+  /// print(const Some(2).zip(const Some('some')));
   ///
   /// // prints "None"
-  /// print(Some(2).zip(None<String>()));
+  /// print(const Some(2).zip(const None<String>()));
   /// ```
   @useResult
   Option<(T, U)> zip<U>(Option<U> other);
@@ -494,10 +494,10 @@ sealed class Option<T> {
   ///
   /// ```dart
   /// // prints "Some((2, some))"
-  /// print(Some(2).zipWith(Some('some'), (a, b) => (a, b)));
+  /// print(const Some(2).zipWith(const Some('some'), (a, b) => (a, b)));
   ///
   /// // prints "None"
-  /// print(Some(2).zipWith(None<String>(), (a, b) => (a, b)));
+  /// print(const Some(2).zipWith(const None<String>(), (a, b) => (a, b)));
   /// ```
   @useResult
   Option<R> zipWith<U, R>(Option<U> other, R Function(T value, U otherValue) zip);
@@ -528,10 +528,10 @@ extension UnzippedOption<T, U> on Option<(T, U)> {
   ///
   /// ```dart
   /// // prints "(Some(2), Some(true))"
-  /// print(Some((2, true)).unzipped);
+  /// print(const Some((2, true)).unzipped);
   ///
   /// // prints "(None, None)"
-  /// print(None<(int, bool)>().unzipped);
+  /// print(const None<(int, bool)>().unzipped);
   /// ```
   @useResult
   (Option<T>, Option<U>) get unzipped {
@@ -554,10 +554,10 @@ extension TransposedOption<T, E> on Option<Result<T, E>> {
   ///
   /// ```dart
   /// // prints "Ok(Some(2))"
-  /// print(Some(Ok(2)).transposed);
+  /// print(const Some(Ok<int, String>(2)).transposed);
   ///
-  /// // prints "Err(2)"
-  /// print(Some(Err(2)).transposed);
+  /// // prints "Err(error)"
+  /// print(const Some(Err<int, String>('error')).transposed);
   /// ```
   @useResult
   Result<Option<T>, E> get transposed {
@@ -579,10 +579,10 @@ extension FlattenedOption<T> on Option<Option<T>> {
   ///
   /// ```dart
   /// // prints "Some(2)"
-  /// print(Some(Some(2)).flattened);
+  /// print(const Some(Some(2)).flattened);
   ///
   /// // prints "None"
-  /// print(Some(None<int>()).flattened);
+  /// print(const Some(None<int>()).flattened);
   /// ```
   @useResult
   Option<T> get flattened {
@@ -601,7 +601,7 @@ final class Some<T> extends Option<T> {
   ///
   /// ```dart
   /// // prints "2"
-  /// print(Some(2).value);
+  /// print(const Some(2).value);
   /// ```
   final T value;
 
@@ -611,7 +611,7 @@ final class Some<T> extends Option<T> {
   ///
   /// ```dart
   /// // prints "Some(2)"
-  /// print(Some(2));
+  /// print(const Some(2));
   /// ```
   @literal
   const Some(this.value) : super._();
@@ -756,7 +756,7 @@ final class None<T> extends Option<T> {
   ///
   /// ```dart
   /// // prints "None"
-  /// print(None<int>());
+  /// print(const None<int>());
   /// ```
   @literal
   const None() : super._();
