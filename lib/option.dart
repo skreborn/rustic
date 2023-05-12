@@ -23,7 +23,11 @@ final class _CheckException implements Exception {
 ///
 /// ```dart
 /// Option<int> multiply(String a, String b) {
-///   return int.tryParse(a).optional.zip(int.tryParse(b).optional).map((ab) => ab.$1 * ab.$2);
+///   return int
+///     .tryParse(a)
+///     .optional
+///     .zip(int.tryParse(b).optional)
+///     .map((ab) => ab.$1 * ab.$2);
 /// }
 /// ```
 ///

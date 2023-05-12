@@ -25,9 +25,13 @@ final class _CheckException<T, E> implements Exception {
 ///
 /// ```dart
 /// Result<int, String> tryParse(String source) {
-///   return Ok<int?, String>(int.tryParse(source)).and((value) {
-///     return value == null ? Err('not a number: $source') : Ok(value);
-///   });
+///   final parsed = int.tryParse(source);
+///
+///   if (parsed != null) {
+///     return Ok(parsed);
+///   }
+///
+///   return Err('not a number: $source');
 /// }
 /// ```
 ///
