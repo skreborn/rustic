@@ -1,3 +1,9 @@
+## 0.5.2
+
+Another hotfix that corrects a compilation error.
+
+- Fix `option/Option.zip` unable to compile due to a type error that the analyzer missed.
+
 ## 0.5.1
 
 This is a hotfix release to restore the flexibility of the collect functions that was accidentally
