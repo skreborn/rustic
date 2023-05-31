@@ -1,3 +1,12 @@
+## 0.6.0 (unreleased)
+
+The equality constraints change in this release, as they now utilize [DeepCollectionEquality][deep]
+from the [collection](https://pub.dev/packages/collection) package.
+
+- **\[BREAKING\]** Compare contained values and errors for `Option`s and `Result`s recursively.
+
+[deep]: https://pub.dev/documentation/collection/latest/collection/DeepCollectionEquality-class.html
+
 ## 0.5.2 (2023-05-12)
 
 Another hotfix that corrects a compilation error.

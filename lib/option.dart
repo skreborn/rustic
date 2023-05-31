@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
 import 'result.dart';
@@ -117,43 +118,6 @@ sealed class Option<T> {
     }
   }
 
-  const Option._();
-
-  /// Creates a [Some] with the given [value], if it is not `null`, or a [None] otherwise.
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// // prints "Some(2)"
-  /// print(Option(2));
-  ///
-  /// // prints "None"
-  /// print(Option<int>(null));
-  /// ```
-  factory Option(T? value) => value != null ? Some(value) : None<T>();
-
-  /// Creates a [Some] with the given [value].
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// // prints "Some(2)"
-  /// print(const Option.some(2));
-  /// ```
-  @literal
-  const factory Option.some(T value) = Some<T>;
-
-  /// Creates a [None].
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// // prints "None"
-  /// print(const Option<int>.none());
-  /// ```
-  @literal
-  const factory Option.none() = None<T>;
-
   /// Whether `this` is a [Some].
   ///
   /// # Examples
@@ -167,20 +131,6 @@ sealed class Option<T> {
   /// ```
   @useResult
   bool get isSome;
-
-  /// Returns `true` if `this` is a [Some] with a contained value that satisfies [condition].
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// // prints "true"
-  /// print(const Some(2).isSomeAnd((value) => value == 2));
-  ///
-  /// // prints "false"
-  /// print(const None<int>().isSomeAnd((value) => value == 2));
-  /// ```
-  @useResult
-  bool isSomeAnd(bool Function(T value) condition);
 
   /// Whether `this` is a [None].
   ///
@@ -223,6 +173,72 @@ sealed class Option<T> {
   /// ```
   @useResult
   Iterable<T> get iterable;
+
+  /// The hash code of `this`.
+  @override
+  @useResult
+  @mustBeOverridden
+  int get hashCode;
+
+  const Option._();
+
+  /// Creates a [Some] with the given [value], if it is not `null`, or a [None] otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "Some(2)"
+  /// print(Option(2));
+  ///
+  /// // prints "None"
+  /// print(Option<int>(null));
+  /// ```
+  factory Option(T? value) => value != null ? Some(value) : None<T>();
+
+  /// Creates a [Some] with the given [value].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "Some(2)"
+  /// print(const Option.some(2));
+  /// ```
+  @literal
+  const factory Option.some(T value) = Some<T>;
+
+  /// Creates a [None].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "None"
+  /// print(const Option<int>.none());
+  /// ```
+  @literal
+  const factory Option.none() = None<T>;
+
+  /// Whether `this` equals [other].
+  ///
+  /// Two [Option] instances are considered equal if they are both either [Some] or [None] and their
+  /// contained values are equal according to [DeepCollectionEquality.equals].
+  @override
+  @useResult
+  @mustBeOverridden
+  operator ==(covariant Option<T> other);
+
+  /// Returns `true` if `this` is a [Some] with a contained value that satisfies [condition].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "true"
+  /// print(const Some(2).isSomeAnd((value) => value == 2));
+  ///
+  /// // prints "false"
+  /// print(const None<int>().isSomeAnd((value) => value == 2));
+  /// ```
+  @useResult
+  bool isSomeAnd(bool Function(T value) condition);
 
   /// Returns `true` if `this` is a [Some] of the given [value].
   ///
@@ -501,6 +517,22 @@ sealed class Option<T> {
   /// ```
   @useResult
   Option<R> zipWith<U, R>(Option<U> other, R Function(T value, U otherValue) zip);
+
+  /// Returns the `String` representation of `this`.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "Some(2)"
+  /// print(const Some(2));
+  ///
+  /// // prints "None"
+  /// print(const None<int>());
+  /// ```
+  @override
+  @useResult
+  @mustBeOverridden
+  String toString();
 }
 
 /// An extension on any nullable object.
@@ -520,7 +552,7 @@ extension Optional<T> on T? {
   Option<T> get optional => Option(this);
 }
 
-/// An extension on [Option] containing a [Result].
+/// An extension on an [Option] containing a [Result].
 extension UnzippedOption<T, U> on Option<(T, U)> {
   /// An [Option] containing a tuple transformed into a tuple of two [Option]s.
   ///
@@ -542,7 +574,7 @@ extension UnzippedOption<T, U> on Option<(T, U)> {
   }
 }
 
-/// An extension on [Option] containing a [Result].
+/// An extension on an [Option] containing a [Result].
 extension TransposedOption<T, E> on Option<Result<T, E>> {
   /// An [Option] containing a [Result] transposed into a [Result] containing an [Option].
   ///
@@ -569,7 +601,7 @@ extension TransposedOption<T, E> on Option<Result<T, E>> {
   }
 }
 
-/// An extension on [Option] containing another [Option].
+/// An extension on an [Option] containing another [Option].
 extension FlattenedOption<T> on Option<Option<T>> {
   /// An [Option] containing another [Option] flattened into a single [Option].
   ///
@@ -605,6 +637,26 @@ final class Some<T> extends Option<T> {
   /// ```
   final T value;
 
+  @override
+  @useResult
+  bool get isSome => true;
+
+  @override
+  @useResult
+  bool get isNone => false;
+
+  @override
+  @useResult
+  T get valueOrNull => value;
+
+  @override
+  @useResult
+  Iterable<T> get iterable => Iterable.generate(1, (_) => value);
+
+  @override
+  @useResult
+  int get hashCode => const DeepCollectionEquality().hash(value);
+
   /// Creates an [Option] with the given [value].
   ///
   /// # Examples
@@ -618,23 +670,16 @@ final class Some<T> extends Option<T> {
 
   @override
   @useResult
-  bool get isSome => true;
+  operator ==(covariant Option<T> other) {
+    return switch (other) {
+      Some(:final value) => const DeepCollectionEquality().equals(this.value, value),
+      None() => false,
+    };
+  }
 
   @override
   @useResult
   bool isSomeAnd(bool Function(T value) condition) => condition(value);
-
-  @override
-  @useResult
-  bool get isNone => false;
-
-  @override
-  @useResult
-  T get valueOrNull => value;
-
-  @override
-  @useResult
-  Iterable<T> get iterable => Iterable.generate(1, (_) => value);
 
   @override
   @useResult
@@ -733,24 +778,31 @@ final class Some<T> extends Option<T> {
 
   @override
   @useResult
-  operator ==(covariant Option<T> other) {
-    return switch (other) {
-      Some(:final value) => value == this.value,
-      None() => false,
-    };
-  }
-
-  @override
-  @useResult
-  int get hashCode => value.hashCode;
-
-  @override
-  @useResult
   String toString() => 'Some($value)';
 }
 
 /// An [Option] with no value.
 final class None<T> extends Option<T> {
+  @override
+  @useResult
+  bool get isSome => false;
+
+  @override
+  @useResult
+  bool get isNone => true;
+
+  @override
+  @useResult
+  Null get valueOrNull => null;
+
+  @override
+  @useResult
+  Iterable<T> get iterable => const Iterable.empty();
+
+  @override
+  @useResult
+  int get hashCode => 0;
+
   /// Creates an [Option] with no value.
   ///
   /// # Examples
@@ -764,23 +816,11 @@ final class None<T> extends Option<T> {
 
   @override
   @useResult
-  bool get isSome => false;
+  operator ==(covariant Option<T> other) => other is None;
 
   @override
   @useResult
   bool isSomeAnd(bool Function(T value) condition) => false;
-
-  @override
-  @useResult
-  bool get isNone => true;
-
-  @override
-  @useResult
-  Null get valueOrNull => null;
-
-  @override
-  @useResult
-  Iterable<T> get iterable => const Iterable.empty();
 
   @override
   @useResult
@@ -860,14 +900,6 @@ final class None<T> extends Option<T> {
   @override
   @useResult
   None<R> zipWith<U, R>(Option<U> other, R Function(T value, U otherValue) zip) => None<R>();
-
-  @override
-  @useResult
-  operator ==(covariant Option<T> other) => other is None;
-
-  @override
-  @useResult
-  int get hashCode => 0;
 
   @override
   @useResult

@@ -3,125 +3,137 @@ import 'package:rustic/result.dart';
 import 'package:checks/checks.dart';
 import 'package:test/test.dart';
 
+typedef _Result = Result<int, String>;
+typedef _Ok<T> = Ok<T, String>;
+typedef _Err<E> = Err<int, E>;
+
 void main() {
+  _Result validate(int n) => n % 2 != 0 ? Ok(n) : Err('even: $n');
+
+  int triple(int n) => n * 3;
+  int length(String s) => s.length;
+  String exclaim(Object value) => '$value!';
+
   group('Result', () {
-    group('factories', () {
-      group('named', () {
-        test('some', () {
-          check(const Result<int, String>.ok(2)).equals(const Ok(2));
-        });
-
-        test('none', () {
-          check(const Result<int, String>.err('error')).equals(const Err('error'));
-        });
-      });
-    });
-
     group('static methods', () {
       test('collect', () {
         final err = Result.collect<int, String>((check) {
-          final first = check(const Ok(2));
-          final second = check(const Err<int, String>('error'));
+          final first = check(validate(1));
+          final second = check(validate(2));
 
           return Ok(first + second);
         });
 
-        check(err).equals(const Err('error'));
+        check(err).equals(const Err('even: 2'));
 
         final ok = Result.collect<int, String>((check) {
-          final first = check(const Ok(2));
-          final second = check(const Ok(3));
+          final first = check(validate(1));
+          final second = check(validate(3));
 
           return Ok(first + second);
         });
 
-        check(ok).equals(const Ok(5));
+        check(ok).equals(const Ok(4));
       });
 
       test('collectAsync', () {
         final err = Result.collectAsync<int, String>((check) async {
-          final first = check(await Future.value(const Ok(2)));
-          final second = check(await Future.value(const Err<int, String>('error')));
+          final first = check(await Future.value(validate(1)));
+          final second = check(await Future.value(validate(2)));
 
           return Ok(first + second);
         });
 
-        check(err).completes(it()..equals(const Err('error')));
+        check(err).completes(it()..equals(const Err('even: 2')));
 
         final ok = Result.collectAsync<int, String>((check) async {
-          final first = check(await Future.value(const Ok(2)));
-          final second = check(await Future.value(const Ok(3)));
+          final first = check(await Future.value(validate(1)));
+          final second = check(await Future.value(validate(3)));
 
           return Ok(first + second);
         });
 
-        check(ok).completes(it()..equals(const Ok(5)));
+        check(ok).completes(it()..equals(const Ok(4)));
+      });
+    });
+
+    group('factories', () {
+      group('named', () {
+        test('ok', () => check(const _Result.ok(2)).equals(const Ok(2)));
+        test('err', () => check(const _Result.err('oops')).equals(const Err('oops')));
       });
     });
   });
 
   group('Ok', () {
+    const subject = _Ok(2);
+
     group('properties', () {
-      test('value', () => check(const Ok<int, String>(2).value).equals(2));
-      test('isOk', () => check(const Ok<int, String>(2).isOk).isTrue());
-      test('isErr', () => check(const Ok<int, String>(2).isErr).isFalse());
-      test('ok', () => check(const Ok<int, String>(2).ok).equals(const Some(2)));
-      test('err', () => check(const Ok<int, String>(2).err).equals(const None()));
-      test('valueOrNull', () => check(const Ok<int, String>(2).valueOrNull).equals(2));
-      test('errorOrNull', () => check(const Ok<int, String>(2).errorOrNull).equals(null));
-      test('iterable', () => check(const Ok<int, String>(2).iterable.toList()).deepEquals([2]));
+      test('value', () => check(subject.value).equals(2));
+      test('isOk', () => check(subject.isOk).isTrue());
+      test('isErr', () => check(subject.isErr).isFalse());
+      test('ok', () => check(subject.ok).equals(const Some(2)));
+      test('err', () => check(subject.err).equals(const None()));
+      test('valueOrNull', () => check(subject.valueOrNull).equals(2));
+      test('errorOrNull', () => check(subject.errorOrNull).equals(null));
+      test('iterable', () => check(subject.iterable.toList()).deepEquals([2]));
+    });
+
+    group('operators', () {
+      test('==', () {
+        check(const _Ok(2)).equals(const Ok(2));
+        check(const _Ok(<int>[])).equals(const Ok([]));
+        check(const _Ok([1, 2, 3])).equals(const Ok([1, 2, 3]));
+        check(const _Ok({1, 2, 3})).equals(const Ok({1, 2, 3}));
+        check(const _Ok({1, 2, 3})).equals(const Ok({3, 2, 1}));
+        check(const _Ok(2)).not(it()..equals(const Ok(3)));
+        check(const _Ok([1, 2, 3])).not(it()..equals(const Ok([3, 2, 1])));
+        check(const _Result.ok(2)).not(it()..equals(const Err('oops')));
+      });
     });
 
     group('methods', () {
       test('isOkAnd', () {
-        check(const Ok<int, String>(2).isOkAnd((value) => value == 2)).isTrue();
-        check(const Ok<int, String>(2).isOkAnd((value) => value == 3)).isFalse();
+        check(subject.isOkAnd((value) => value == 2)).isTrue();
+        check(subject.isOkAnd((value) => value == 3)).isFalse();
       });
 
-      test('isErrAnd', () => check(const Ok<int, String>(2).isErrAnd((error) => true)).isFalse());
+      test('isErrAnd', () => check(subject.isErrAnd((error) => true)).isFalse());
 
       test('contains', () {
-        check(const Ok<int, String>(2).contains(2)).isTrue();
-        check(const Ok<int, String>(2).contains(3)).isFalse();
+        check(subject.contains(2)).isTrue();
+        check(subject.contains(3)).isFalse();
       });
 
-      test('containsErr', () => check(const Ok<int, String>(2).containsErr('error')).isFalse());
+      test('containsErr', () => check(subject.containsErr('oops')).isFalse());
 
       test('unwrap', () {
-        check(const Ok<int, String>(2).unwrap()).equals(2);
-        check(const Ok<int, String>(2).unwrap(msg: 'custom')).equals(2);
+        check(subject.unwrap()).equals(2);
+        check(subject.unwrap(msg: 'custom')).equals(2);
       });
 
-      test('unwrapOr', () => check(const Ok<int, String>(2).unwrapOr(3)).equals(2));
-
-      test('unwrapOrElse', () {
-        check(const Ok<int, String>(2).unwrapOrElse((error) => error.length)).equals(2);
-      });
+      test('unwrapOr', () => check(subject.unwrapOr(3)).equals(2));
+      test('unwrapOrElse', () => check(subject.unwrapOrElse(length)).equals(2));
 
       test('unwrapErr', () {
-        check(() => const Ok<int, String>(2).unwrapErr())
+        check(() => subject.unwrapErr())
             .throws<StateError>()
             .has((error) => error.message, 'message')
             .equals('tried to unwrap `Ok` as `Err`: 2');
 
-        check(() => const Ok<int, String>(2).unwrapErr(msg: 'custom'))
+        check(() => subject.unwrapErr(msg: 'custom'))
             .throws<StateError>()
             .has((error) => error.message, 'message')
             .equals('custom: 2');
       });
 
-      test('unwrapErrOr', () {
-        check(const Ok<int, String>(2).unwrapErrOr('other')).equals('other');
-      });
-
-      test('unwrapErrOrElse', () {
-        check(const Ok<int, String>(2).unwrapErrOrElse((value) => '$value!')).equals('2!');
-      });
+      test('unwrapErrOr', () => check(subject.unwrapErrOr('daisy')).equals('daisy'));
+      test('unwrapErrOrElse', () => check(subject.unwrapErrOrElse(exclaim)).equals('2!'));
 
       test('inspect', () {
         int? calledWith;
 
-        check(const Ok<int, String>(2).inspect((value) => calledWith = value)).equals(const Ok(2));
+        check(subject.inspect((value) => calledWith = value)).equals(const Ok(2));
 
         check(calledWith).equals(2);
       });
@@ -129,134 +141,111 @@ void main() {
       test('inspectErr', () {
         String? calledWith;
 
-        check(const Ok<int, String>(2).inspectErr((error) => calledWith = error))
-            .equals(const Ok(2));
+        check(subject.inspectErr((error) => calledWith = error)).equals(const Ok(2));
 
         check(calledWith).isNull();
       });
 
-      test('map', () {
-        check(const Ok<int, String>(2).map((value) => value * 2)).equals(const Ok(4));
-      });
-
-      test('mapOr', () {
-        check(const Ok<int, String>(2).mapOr((value) => value * 2, 0)).equals(4);
-      });
-
-      test('mapOrElse', () {
-        check(const Ok<int, String>(2).mapOrElse((value) => value * 2, (error) => error.length))
-            .equals(4);
-      });
-
-      test('mapErr', () {
-        check(const Ok<int, String>(2).mapErr((error) => '$error!')).equals(const Ok(2));
-      });
-
-      test('mapErrOr', () {
-        check(const Ok<int, String>(2).mapErrOr((error) => '$error!', 'other')).equals('other');
-      });
-
-      test('mapErrOrElse', () {
-        check(const Ok<int, String>(2).mapErrOrElse((error) => '$error!', (value) => '$value!'))
-            .equals('2!');
-      });
+      test('map', () => check(subject.map(triple)).equals(const Ok(6)));
+      test('mapOr', () => check(subject.mapOr(triple, 0)).equals(6));
+      test('mapOrElse', () => check(subject.mapOrElse(triple, length)).equals(6));
+      test('mapErr', () => check(subject.mapErr(exclaim)).equals(const Ok(2)));
+      test('mapErrOr', () => check(subject.mapErrOr(exclaim, 'daisy')).equals('daisy'));
+      test('mapErrOrElse', () => check(subject.mapErrOrElse(exclaim, exclaim)).equals('2!'));
 
       test('and', () {
-        check(const Ok<int, String>(2).and(const Ok('other'))).equals(const Ok('other'));
-
-        check(const Ok<int, String>(2).and(const Err<String, String>('error')))
-            .equals(const Err('error'));
+        check(subject.and(const _Ok('daisy'))).equals(const Ok('daisy'));
+        check(subject.and(const _Err('oops'))).equals(const Err('oops'));
       });
 
       test('andThen', () {
-        check(const Ok<int, String>(2).andThen((value) => Ok('$value!'))).equals(const Ok('2!'));
-
-        check(const Ok<int, String>(2).andThen((value) => Err<String, String>('$value!')))
-            .equals(const Err('2!'));
+        check(subject.andThen((value) => _Ok('$value!'))).equals(const Ok('2!'));
+        check(subject.andThen((value) => _Err('$value!'))).equals(const Err('2!'));
       });
 
       test('or', () {
-        check(const Ok<int, String>(2).or(const Ok<int, String>(3))).equals(const Ok(2));
-        check(const Ok<int, String>(2).or(const Err('error'))).equals(const Ok(2));
+        check(subject.or(const _Ok(3))).equals(const Ok(2));
+        check(subject.or(const _Err('oops'))).equals(const Ok(2));
       });
 
       test('orElse', () {
-        check(const Ok<int, String>(2).orElse((error) => Ok<int, String>(error.length)))
-            .equals(const Ok(2));
-
-        check(const Ok<int, String>(2).orElse((error) => Err('$error!'))).equals(const Ok(2));
+        check(subject.orElse((error) => _Ok(error.length))).equals(const Ok(2));
+        check(subject.orElse((error) => _Err('$error!'))).equals(const Ok(2));
       });
 
-      test('toString', () => check(const Ok<int, String>(2).toString()).equals('Ok(2)'));
+      test('toString', () => check(subject.toString()).equals('Ok(2)'));
     });
   });
 
   group('Err', () {
+    const subject = _Err('oops');
+
     group('properties', () {
-      test('error', () => check(const Err<int, String>('error').error).equals('error'));
-      test('isOk', () => check(const Err<int, String>('error').isOk).isFalse());
-      test('isErr', () => check(const Err<int, String>('error').isErr).isTrue());
-      test('ok', () => check(const Err<int, String>('error').ok).equals(const None()));
-      test('err', () => check(const Err<int, String>('error').err).equals(const Some('error')));
-      test('valueOrNull', () => check(const Err<int, String>('error').valueOrNull).equals(null));
-      test('errorOrNull', () => check(const Err<int, String>('error').errorOrNull).equals('error'));
-      test('iterable', () => check(const Err<int, String>('error').iterable.toList()).isEmpty());
+      test('oops', () => check(subject.error).equals('oops'));
+      test('isOk', () => check(subject.isOk).isFalse());
+      test('isErr', () => check(subject.isErr).isTrue());
+      test('ok', () => check(subject.ok).equals(const None()));
+      test('err', () => check(subject.err).equals(const Some('oops')));
+      test('valueOrNull', () => check(subject.valueOrNull).equals(null));
+      test('errorOrNull', () => check(subject.errorOrNull).equals('oops'));
+      test('iterable', () => check(subject.iterable.toList()).isEmpty());
+    });
+
+    group('operators', () {
+      test('==', () {
+        check(const _Err('oops')).equals(const Err('oops'));
+        check(const _Err(<String>[])).equals(const Err([]));
+        check(const _Err(['oops', 'daisy'])).equals(const Err(['oops', 'daisy']));
+        check(const _Err({'oops', 'daisy'})).equals(const Err({'oops', 'daisy'}));
+        check(const _Err({'oops', 'daisy'})).equals(const Err({'daisy', 'oops'}));
+        check(const _Err(2)).not(it()..equals(const Err(3)));
+        check(const _Err(['oops', 'daisy'])).not(it()..equals(const Err(['daisy', 'oops'])));
+        check(const _Result.err('oops')).not(it()..equals(const Ok(2)));
+      });
     });
 
     group('methods', () {
-      test('isOkAnd', () {
-        check(const Err<int, String>('error').isOkAnd((value) => true)).isFalse();
-      });
+      test('isOkAnd', () => check(subject.isOkAnd((value) => true)).isFalse());
 
       test('isErrAnd', () {
-        check(const Err<int, String>('error').isErrAnd((error) => error == 'error')).isTrue();
-        check(const Err<int, String>('error').isErrAnd((error) => error == 'other')).isFalse();
+        check(subject.isErrAnd((error) => error == 'oops')).isTrue();
+        check(subject.isErrAnd((error) => error == 'daisy')).isFalse();
       });
 
-      test('contains', () => check(const Err<int, String>('error').contains(2)).isFalse());
+      test('contains', () => check(subject.contains(2)).isFalse());
 
       test('containsErr', () {
-        check(const Err<int, String>('error').containsErr('error')).isTrue();
-        check(const Err<int, String>('error').containsErr('other')).isFalse();
+        check(subject.containsErr('oops')).isTrue();
+        check(subject.containsErr('daisy')).isFalse();
       });
 
       test('unwrap', () {
-        check(() => const Err<int, String>('error').unwrap())
+        check(() => subject.unwrap())
             .throws<StateError>()
             .has((error) => error.message, 'message')
-            .equals('tried to unwrap `Err` as `Ok`: error');
+            .equals('tried to unwrap `Err` as `Ok`: oops');
 
-        check(() => const Err<int, String>('error').unwrap(msg: 'custom'))
+        check(() => subject.unwrap(msg: 'custom'))
             .throws<StateError>()
             .has((error) => error.message, 'message')
-            .equals('custom: error');
+            .equals('custom: oops');
       });
 
-      test('unwrapOr', () => check(const Err<int, String>('error').unwrapOr(2)).equals(2));
-
-      test('unwrapOrElse', () {
-        check(const Err<int, String>('error').unwrapOrElse((value) => value.length)).equals(5);
-      });
+      test('unwrapOr', () => check(subject.unwrapOr(2)).equals(2));
+      test('unwrapOrElse', () => check(subject.unwrapOrElse(length)).equals(4));
 
       test('unwrapErr', () {
-        check(const Err<int, String>('error').unwrapErr()).equals('error');
-        check(const Err<int, String>('error').unwrapErr(msg: 'custom')).equals('error');
+        check(subject.unwrapErr()).equals('oops');
+        check(subject.unwrapErr(msg: 'custom')).equals('oops');
       });
 
-      test('unwrapErrOr', () {
-        check(const Err<int, String>('error').unwrapErrOr('other')).equals('error');
-      });
-
-      test('unwrapErrOrElse', () {
-        check(const Err<int, String>('error').unwrapErrOrElse((value) => '$value!'))
-            .equals('error');
-      });
+      test('unwrapErrOr', () => check(subject.unwrapErrOr('daisy')).equals('oops'));
+      test('unwrapErrOrElse', () => check(subject.unwrapErrOrElse(exclaim)).equals('oops'));
 
       test('inspect', () {
         int? calledWith;
 
-        check(const Err<int, String>('error').inspect((value) => calledWith = value))
-            .equals(const Err('error'));
+        check(subject.inspect((value) => calledWith = value)).equals(const Err('oops'));
 
         check(calledWith).isNull();
       });
@@ -264,73 +253,39 @@ void main() {
       test('inspectErr', () {
         String? calledWith;
 
-        check(const Err<int, String>('error').inspectErr((error) => calledWith = error))
-            .equals(const Err('error'));
+        check(subject.inspectErr((error) => calledWith = error)).equals(const Err('oops'));
 
-        check(calledWith).equals('error');
+        check(calledWith).equals('oops');
       });
 
-      test('map', () {
-        check(const Err<int, String>('error').map((value) => value * 2)).equals(const Err('error'));
-      });
-
-      test('mapOr', () {
-        check(const Err<int, String>('error').mapOr((value) => value * 2, 0)).equals(0);
-      });
-
-      test('mapOrElse', () {
-        check(const Err<int, String>('error')
-            .mapOrElse((value) => value * 2, (error) => error.length)).equals(5);
-      });
-
-      test('mapErr', () {
-        check(const Err<int, String>('error').mapErr((error) => '$error!'))
-            .equals(const Err('error!'));
-      });
-
-      test('mapErrOr', () {
-        check(const Err<int, String>('error').mapErrOr((error) => '$error!', 'other'))
-            .equals('error!');
-      });
-
-      test('mapErrOrElse', () {
-        check(const Err<int, String>('error').mapErrOrElse(
-          (error) => '$error!',
-          (value) => '$value!',
-        )).equals('error!');
-      });
+      test('map', () => check(subject.map(triple)).equals(const Err('oops')));
+      test('mapOr', () => check(subject.mapOr(triple, 0)).equals(0));
+      test('mapOrElse', () => check(subject.mapOrElse(triple, length)).equals(4));
+      test('mapErr', () => check(subject.mapErr(exclaim)).equals(const Err('oops!')));
+      test('mapErrOr', () => check(subject.mapErrOr(exclaim, 'daisy')).equals('oops!'));
+      test('mapErrOrElse', () => check(subject.mapErrOrElse(exclaim, exclaim)).equals('oops!'));
 
       test('and', () {
-        check(const Err<int, String>('error').and(const Ok(2))).equals(const Err('error'));
-
-        check(const Err<int, String>('error').and(const Err<String, String>('other')))
-            .equals(const Err('error'));
+        check(subject.and(const _Ok(2))).equals(const Err('oops'));
+        check(subject.and(const _Err('daisy'))).equals(const Err('oops'));
       });
 
       test('andThen', () {
-        check(const Err<int, String>('error').andThen((value) => Ok('$value!')))
-            .equals(const Err('error'));
-
-        check(const Err<int, String>('error').andThen((value) => Err<String, String>('$value!')))
-            .equals(const Err('error'));
+        check(subject.andThen((value) => _Ok('$value!'))).equals(const Err('oops'));
+        check(subject.andThen((value) => _Err('$value!'))).equals(const Err('oops'));
       });
 
       test('or', () {
-        check(const Err<int, String>('error').or(const Ok<int, String>(3))).equals(const Ok(3));
-        check(const Err<int, String>('error').or(const Err('other'))).equals(const Err('other'));
+        check(subject.or(const _Ok(3))).equals(const Ok(3));
+        check(subject.or(const _Err('daisy'))).equals(const Err('daisy'));
       });
 
       test('orElse', () {
-        check(const Err<int, String>('error').orElse((error) => Ok<int, String>(error.length)))
-            .equals(const Ok(5));
-
-        check(const Err<int, String>('error').orElse((error) => Err('$error!')))
-            .equals(const Err('error!'));
+        check(subject.orElse((error) => _Ok(error.length))).equals(const Ok(4));
+        check(subject.orElse((error) => _Err('$error!'))).equals(const Err('oops!'));
       });
 
-      test('toString', () {
-        check(const Err<int, String>('error').toString()).equals('Err(error)');
-      });
+      test('toString', () => check(subject.toString()).equals('Err(oops)'));
     });
   });
 
@@ -342,16 +297,16 @@ void main() {
 
   group('ErroneousResult', () {
     group('properties', () {
-      test('error', () => check(const Result<Never, String>.err('error').error).equals('error'));
+      test('oops', () => check(const Result<Never, String>.err('oops').error).equals('oops'));
     });
   });
 
   group('TransposedResult', () {
     group('properties', () {
       test('transposed', () {
-        check(const Ok<Some<int>, String>(Some(2)).transposed).equals(const Some(Ok(2)));
-        check(const Err<Some<int>, String>('error').transposed).equals(const Some(Err('error')));
-        check(const Ok<None<int>, String>(None()).transposed).equals(const None());
+        check(const _Ok<Some<int>>(Some(2)).transposed).equals(const Some(Ok(2)));
+        check(const Err<Some<int>, String>('oops').transposed).equals(const Some(Err('oops')));
+        check(const _Ok<None<int>>(None()).transposed).equals(const None());
       });
     });
   });
@@ -359,12 +314,9 @@ void main() {
   group('FlattenedResult', () {
     group('properties', () {
       test('flattened', () {
-        check(const Ok<Result<int, String>, String>(Ok(2)).flattened).equals(const Ok(2));
-
-        check(const Ok<Result<int, String>, String>(Err('error')).flattened)
-            .equals(const Err('error'));
-
-        check(const Err<Result<int, String>, String>('error').flattened).equals(const Err('error'));
+        check(const _Ok<_Result>(Ok(2)).flattened).equals(const Ok(2));
+        check(const _Ok<_Result>(Err('oops')).flattened).equals(const Err('oops'));
+        check(const Err<_Result, String>('oops').flattened).equals(const Err('oops'));
       });
     });
   });

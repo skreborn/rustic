@@ -2,6 +2,7 @@
 
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:meta/meta.dart';
 
 import 'option.dart';
@@ -121,28 +122,6 @@ sealed class Result<T, E> {
     }
   }
 
-  const Result._();
-
-  /// Creates an [Ok] with the given [value].
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// // prints "Ok(2)"
-  /// print(Result<int, String>.ok(2));
-  /// ```
-  const factory Result.ok(T value) = Ok<T, E>;
-
-  /// Creates an [Err] with the given [error].
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// // prints "Err(error)"
-  /// print(Result<int, String>.err('error'));
-  /// ```
-  const factory Result.err(E error) = Err<T, E>;
-
   /// Whether `this` is an [Ok].
   ///
   /// # Examples
@@ -157,20 +136,6 @@ sealed class Result<T, E> {
   @useResult
   bool get isOk;
 
-  /// Returns `true` if `this` is an [Ok] with a contained value that satisfies [condition].
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// // prints "true"
-  /// print(const Ok<int, String>(2).isOkAnd((value) => value == 2));
-  ///
-  /// // prints "false"
-  /// print(const Err<int, String>('error').isOkAnd((value) => value == 2));
-  /// ```
-  @useResult
-  bool isOkAnd(bool Function(T value) condition);
-
   /// Whether `this` is an [Err].
   ///
   /// # Examples
@@ -184,20 +149,6 @@ sealed class Result<T, E> {
   /// ```
   @useResult
   bool get isErr;
-
-  /// Returns `true` if `this` is an [Err] with a contained error that satisfies [condition].
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// // prints "false"
-  /// print(const Ok<int, String>(2).isErrAnd((value) => value == 'error'));
-  ///
-  /// // prints "true"
-  /// print(const Err<int, String>('error').isErrAnd((value) => value == 'error'));
-  /// ```
-  @useResult
-  bool isErrAnd(bool Function(E error) condition);
 
   /// The possibly contained value.
   ///
@@ -268,6 +219,69 @@ sealed class Result<T, E> {
   /// ```
   @useResult
   Iterable<T> get iterable;
+
+  /// The hash code of `this`.
+  @override
+  @useResult
+  int get hashCode;
+
+  const Result._();
+
+  /// Creates an [Ok] with the given [value].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "Ok(2)"
+  /// print(Result<int, String>.ok(2));
+  /// ```
+  const factory Result.ok(T value) = Ok<T, E>;
+
+  /// Creates an [Err] with the given [error].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "Err(error)"
+  /// print(Result<int, String>.err('error'));
+  /// ```
+  const factory Result.err(E error) = Err<T, E>;
+
+  /// Whether `this` equals [other].
+  ///
+  /// Two [Result] instances are considered equal if they are both either [Ok] or [Err] and their
+  /// contained values/errors are equal according to [DeepCollectionEquality.equals].
+  @override
+  @useResult
+  operator ==(covariant Result<T, E> other);
+
+  /// Returns `true` if `this` is an [Ok] with a contained value that satisfies [condition].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "true"
+  /// print(const Ok<int, String>(2).isOkAnd((value) => value == 2));
+  ///
+  /// // prints "false"
+  /// print(const Err<int, String>('error').isOkAnd((value) => value == 2));
+  /// ```
+  @useResult
+  bool isOkAnd(bool Function(T value) condition);
+
+  /// Returns `true` if `this` is an [Err] with a contained error that satisfies [condition].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "false"
+  /// print(const Ok<int, String>(2).isErrAnd((value) => value == 'error'));
+  ///
+  /// // prints "true"
+  /// print(const Err<int, String>('error').isErrAnd((value) => value == 'error'));
+  /// ```
+  @useResult
+  bool isErrAnd(bool Function(E error) condition);
 
   /// Returns `true` if `this` is an [Ok] with the given [value].
   ///
@@ -560,9 +574,24 @@ sealed class Result<T, E> {
   /// ```
   @useResult
   Result<T, F> orElse<F>(Result<T, F> Function(E error) calculateOther);
+
+  /// Returns the `String` representation of `this`.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "Ok(2)"
+  /// print(const Ok<int, String>(2));
+  ///
+  /// // prints "Err(error)"
+  /// print(const Err<int, String>('error'));
+  /// ```
+  @override
+  @useResult
+  String toString();
 }
 
-/// An extension on [Result] that is guaranteed to be an [Ok].
+/// An extension on a [Result] that is guaranteed to be an [Ok].
 extension SuccessfulResult<T> on Result<T, Never> {
   /// Returns the contained value.
   ///
@@ -579,7 +608,7 @@ extension SuccessfulResult<T> on Result<T, Never> {
   T get value => ok.unwrap();
 }
 
-/// An extension on [Result] that is guaranteed to be an [Err].
+/// An extension on a [Result] that is guaranteed to be an [Err].
 extension ErroneousResult<E> on Result<Never, E> {
   /// Returns the contained error.
   ///
@@ -596,7 +625,7 @@ extension ErroneousResult<E> on Result<Never, E> {
   E get error => err.unwrap();
 }
 
-/// An extension on [Result] containing an [Option].
+/// An extension on a [Result] containing an [Option].
 extension TransposedResult<T, E> on Result<Option<T>, E> {
   /// A [Result] containing an [Option] transposed into an [Option] containing a [Result].
   ///
@@ -623,7 +652,7 @@ extension TransposedResult<T, E> on Result<Option<T>, E> {
   }
 }
 
-/// An extension on [Result] containing another [Result].
+/// An extension on a [Result] containing another [Result].
 extension FlattenedResult<T, E> on Result<Result<T, E>, E> {
   /// Flattens a [Result] containing another [Result].
   ///
@@ -659,32 +688,13 @@ final class Ok<T, E> extends Result<T, E> {
   /// ```
   final T value;
 
-  /// Creates a successful [Result] with the given [value].
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// // prints "Ok(2)"
-  /// print(const Ok<int, String>(2));
-  /// ```
-  @literal
-  const Ok(this.value) : super._();
-
   @override
   @useResult
   bool get isOk => true;
 
   @override
   @useResult
-  bool isOkAnd(bool Function(T value) condition) => condition(value);
-
-  @override
-  @useResult
   bool get isErr => false;
-
-  @override
-  @useResult
-  bool isErrAnd(bool Function(E error) condition) => false;
 
   @override
   @useResult
@@ -705,6 +715,38 @@ final class Ok<T, E> extends Result<T, E> {
   @override
   @useResult
   Iterable<T> get iterable => Iterable.generate(1, (_) => value);
+
+  @override
+  @useResult
+  int get hashCode => const DeepCollectionEquality().hash(value);
+
+  /// Creates a successful [Result] with the given [value].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "Ok(2)"
+  /// print(const Ok<int, String>(2));
+  /// ```
+  @literal
+  const Ok(this.value) : super._();
+
+  @override
+  @useResult
+  operator ==(covariant Result<T, E> other) {
+    return switch (other) {
+      Ok(:final value) => const DeepCollectionEquality().equals(this.value, value),
+      Err() => false,
+    };
+  }
+
+  @override
+  @useResult
+  bool isOkAnd(bool Function(T value) condition) => condition(value);
+
+  @override
+  @useResult
+  bool isErrAnd(bool Function(E error) condition) => false;
 
   @override
   @useResult
@@ -796,19 +838,6 @@ final class Ok<T, E> extends Result<T, E> {
 
   @override
   @useResult
-  operator ==(covariant Result<T, E> other) {
-    return switch (other) {
-      Ok(:final value) => value == this.value,
-      Err() => false,
-    };
-  }
-
-  @override
-  @useResult
-  int get hashCode => value.hashCode;
-
-  @override
-  @useResult
   String toString() => 'Ok($value)';
 }
 
@@ -824,32 +853,13 @@ final class Err<T, E> extends Result<T, E> {
   /// ```
   final E error;
 
-  /// Creates an erroneous [Result] with the given [error].
-  ///
-  /// # Examples
-  ///
-  /// ```dart
-  /// // prints "Err(error)"
-  /// print(const Err<int, String>('error'));
-  /// ```
-  @literal
-  const Err(this.error) : super._();
-
   @override
   @useResult
   bool get isOk => false;
 
   @override
   @useResult
-  bool isOkAnd(bool Function(T value) condition) => false;
-
-  @override
-  @useResult
   bool get isErr => true;
-
-  @override
-  @useResult
-  bool isErrAnd(bool Function(E error) condition) => condition(error);
 
   @override
   @useResult
@@ -870,6 +880,38 @@ final class Err<T, E> extends Result<T, E> {
   @override
   @useResult
   Iterable<T> get iterable => const Iterable.empty();
+
+  @override
+  @useResult
+  int get hashCode => const DeepCollectionEquality().hash(error);
+
+  /// Creates an erroneous [Result] with the given [error].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "Err(error)"
+  /// print(const Err<int, String>('error'));
+  /// ```
+  @literal
+  const Err(this.error) : super._();
+
+  @override
+  @useResult
+  operator ==(covariant Result<T, E> other) {
+    return switch (other) {
+      Ok() => false,
+      Err(:final error) => const DeepCollectionEquality().equals(this.error, error),
+    };
+  }
+
+  @override
+  @useResult
+  bool isOkAnd(bool Function(T value) condition) => false;
+
+  @override
+  @useResult
+  bool isErrAnd(bool Function(E error) condition) => condition(error);
 
   @override
   @useResult
@@ -960,19 +1002,6 @@ final class Err<T, E> extends Result<T, E> {
   @override
   @useResult
   Result<T, F> orElse<F>(Result<T, F> Function(E error) calculateOther) => calculateOther(error);
-
-  @override
-  @useResult
-  operator ==(covariant Result<T, E> other) {
-    return switch (other) {
-      Ok() => false,
-      Err(:final error) => error == this.error,
-    };
-  }
-
-  @override
-  @useResult
-  int get hashCode => error.hashCode;
 
   @override
   @useResult
