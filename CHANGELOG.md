@@ -2,7 +2,7 @@
 
 Another hotfix that corrects a compilation error.
 
-- Fix `option/Option.zip` unable to compile due to a type error that the analyzer missed.
+- Fix `Option.zip` unable to compile due to a type error that the analyzer missed.
 
 ## 0.5.1
 
@@ -29,111 +29,111 @@ migration to the new version more difficult in certain cases, but reduces confus
 in the long run. Real-world usage indicated that the asynchronous versions are seldom used, anyway.
 
 - **\[BREAKING\]** Require Dart 3.
-- Add the `option/Optional` extension.
+- Add the `Optional` extension.
   This replaces the `Optionable` extension.
-- Add the `option/FlattenedOption` extension.
+- Add the `FlattenedOption` extension.
   This replaces the `OptionalOption` extension.
-- Add the `option/UnzippedOption` extension.
-- Add the `option/TransposedOption` extension.
+- Add the `UnzippedOption` extension.
+- Add the `TransposedOption` extension.
   This replaces the `OptionalResult` extension.
-- Add the `option/Option.collect` method.
-- Add the `option/Option.collectAsync` method.
-- Add the `option/Option.inspect` method.
-- Add the `option/Option.isSomeAnd` method.
-- Add the `option/Option.mapOr` method.
-- Add the `option/Option.mapOrElse` method.
-- Add the `option/Option.unwrapOr` method.
-- Add the `option/Option.unwrapOrElse` method.
-- Add the `option/Option.valueOrNull` getter.
-- Add the `result/FlattenedResult` extension.
+- Add the `Option.collect` method.
+- Add the `Option.collectAsync` method.
+- Add the `Option.inspect` method.
+- Add the `Option.isSomeAnd` method.
+- Add the `Option.mapOr` method.
+- Add the `Option.mapOrElse` method.
+- Add the `Option.unwrapOr` method.
+- Add the `Option.unwrapOrElse` method.
+- Add the `Option.valueOrNull` getter.
+- Add the `FlattenedResult` extension.
   This replaces the `ResultingResult` extension.
-- Add the `result/TransposedResult` extension.
+- Add the `TransposedResult` extension.
   This replaces the `ResultingOption` extension.
-- Add the `result/Result.collectAsync` method.
-- Add the `result/Result.errorOrNull` getter.
-- Add the `result/Result.inspect` method.
-- Add the `result/Result.inspectErr` method.
-- Add the `result/Result.isErrAnd` method.
-- Add the `result/Result.isOkAnd` method.
-- Add the `result/Result.mapErrOr` method.
-- Add the `result/Result.mapErrOrElse` method.
-- Add the `result/Result.mapOr` method.
-- Add the `result/Result.mapOrElse` method.
-- Add the `result/Result.unwrapErrOr` method.
-- Add the `result/Result.unwrapErrOrElse` method.
-- Add the `result/Result.unwrapOr` method.
-- Add the `result/Result.unwrapOrElse` method.
-- Add the `result/Result.valueOrNull` getter.
-- **\[BREAKING\]** Rename the `option/Option.andSync` method to `andThen`.
-- **\[BREAKING\]** Remove the `option/Option.asPlain` method.
+- Add the `Result.collectAsync` method.
+- Add the `Result.errorOrNull` getter.
+- Add the `Result.inspect` method.
+- Add the `Result.inspectErr` method.
+- Add the `Result.isErrAnd` method.
+- Add the `Result.isOkAnd` method.
+- Add the `Result.mapErrOr` method.
+- Add the `Result.mapErrOrElse` method.
+- Add the `Result.mapOr` method.
+- Add the `Result.mapOrElse` method.
+- Add the `Result.unwrapErrOr` method.
+- Add the `Result.unwrapErrOrElse` method.
+- Add the `Result.unwrapOr` method.
+- Add the `Result.unwrapOrElse` method.
+- Add the `Result.valueOrNull` getter.
+- **\[BREAKING\]** Rename the `Option.andSync` method to `andThen`.
+- **\[BREAKING\]** Remove the `Option.asPlain` method.
   Use the `valueOrNull` getter instead.
-- **\[BREAKING\]** Rename the `option/Option.mapSync` method to `map`.
+- **\[BREAKING\]** Rename the `Option.mapSync` method to `map`.
   This new method no longer accepts a callback to calculate a fallback value.
   If a fallback value is desired, use `mapOr` or `mapOrElse` instead.
-- **\[BREAKING\]** Remove the `option/Option.match` method.
-- **\[BREAKING\]** Remove the `option/Option.matchSync` method.
-- **\[BREAKING\]** Rename the `option/Option.okOrSync` method to `okOrElse`.
-- **\[BREAKING\]** Rename the `option/Option.orSync` method to `orElse`.
-- **\[BREAKING\]** Remove the `option/Option.unwrapNone` method.
-- **\[BREAKING\]** Rename the `option/Option.unwrapSync` method to `unwrap`.
+- **\[BREAKING\]** Remove the `Option.match` method.
+- **\[BREAKING\]** Remove the `Option.matchSync` method.
+- **\[BREAKING\]** Rename the `Option.okOrSync` method to `okOrElse`.
+- **\[BREAKING\]** Rename the `Option.orSync` method to `orElse`.
+- **\[BREAKING\]** Remove the `Option.unwrapNone` method.
+- **\[BREAKING\]** Rename the `Option.unwrapSync` method to `unwrap`.
   This new method no longer accepts a callback to calculate a fallback value.
   If a fallback value is desired, use `unwrapOr` or `unwrapOrElse` instead.
-- **\[BREAKING\]** Remove the `option/Option.whenNone` method.
-- **\[BREAKING\]** Remove the `option/Option.whenNoneSync` method.
-- **\[BREAKING\]** Remove the `option/Option.whenSome` method.
-- **\[BREAKING\]** Remove the `option/Option.whenSomeSync` method.
-- **\[BREAKING\]** Rename the `option/Option.whereSync` method to `where`.
-- **\[BREAKING\]** Rename the `option/Option.zipSync` method to `zip`.
+- **\[BREAKING\]** Remove the `Option.whenNone` method.
+- **\[BREAKING\]** Remove the `Option.whenNoneSync` method.
+- **\[BREAKING\]** Remove the `Option.whenSome` method.
+- **\[BREAKING\]** Remove the `Option.whenSomeSync` method.
+- **\[BREAKING\]** Rename the `Option.whereSync` method to `where`.
+- **\[BREAKING\]** Rename the `Option.zipSync` method to `zip`.
   This new method no longer accepts a callback to generate the other value.
-- **\[BREAKING\]** Rename the `option/Option.zipWithSync` method to `zipWith`.
+- **\[BREAKING\]** Rename the `Option.zipWithSync` method to `zipWith`.
   This new method no longer accepts a callback to generate the other value.
-- **\[BREAKING\]** Remove the `option/Optionable` extension.
+- **\[BREAKING\]** Remove the `Optionable` extension.
   Use the `Optionial` extension instead.
   Instead of an `asOption` method, this new extension has an `optional` getter.
-- **\[BREAKING\]** Remove the `option/OptionalOption` extension.
+- **\[BREAKING\]** Remove the `OptionalOption` extension.
   Use the `FlattenedOption` extension instead.
   Instead of a `flatten` method, this new extension has a `flattened` getter.
-- **\[BREAKING\]** Remove the `option/OptionalResult` extension.
+- **\[BREAKING\]** Remove the `OptionalResult` extension.
   Use the `TransposedOption` extension instead.
   Instead of a `transpose` method, this new extension has a `transposed` getter.
-- **\[BREAKING\]** Remove the `result/Checker` type.
-- **\[BREAKING\]** Remove the `result/ExceptionMapper` type.
-- **\[BREAKING\]** Remove the `result/ExceptionMapperSync` type.
-- **\[BREAKING\]** Rename the `result/OkResult` extension to `SuccessfulResult`.
-- **\[BREAKING\]** Rename the `result/ErrResult` extension to `ErroneousResult`.
-- **\[BREAKING\]** Rename the `result/Result.andSync` method to `andThen`.
-- **\[BREAKING\]** Remove the `result/Result.catchException` method.
-- **\[BREAKING\]** Remove the `result/Result.catchExceptionSync` method.
-- **\[BREAKING\]** Rename the `result/Result.collectSync` method to `collect`.
-- **\[BREAKING\]** Rename the `result/Result.mapErrSync` method to `mapErr`.
+- **\[BREAKING\]** Remove the `Checker` type.
+- **\[BREAKING\]** Remove the `ExceptionMapper` type.
+- **\[BREAKING\]** Remove the `ExceptionMapperSync` type.
+- **\[BREAKING\]** Rename the `OkResult` extension to `SuccessfulResult`.
+- **\[BREAKING\]** Rename the `ErrResult` extension to `ErroneousResult`.
+- **\[BREAKING\]** Rename the `Result.andSync` method to `andThen`.
+- **\[BREAKING\]** Remove the `Result.catchException` method.
+- **\[BREAKING\]** Remove the `Result.catchExceptionSync` method.
+- **\[BREAKING\]** Rename the `Result.collectSync` method to `collect`.
+- **\[BREAKING\]** Rename the `Result.mapErrSync` method to `mapErr`.
   This new method no longer accepts a callback to calculate a fallback error.
   If a fallback error is desired, use `mapErrOr` or `mapErrOrElse` instead.
-- **\[BREAKING\]** Rename the `result/Result.mapSync` method to `map`.
+- **\[BREAKING\]** Rename the `Result.mapSync` method to `map`.
   This new method no longer accepts a callback to calculate a fallback value.
   If a fallback value is desired, use `mapOr` or `mapOrElse` instead.
-- **\[BREAKING\]** Remove the `result/Result.match` method.
-- **\[BREAKING\]** Remove the `result/Result.matchSync` method.
-- **\[BREAKING\]** Rename the `result/Result.orSync` method to `orElse`.
-- **\[BREAKING\]** Rename the `result/Result.unwrapErrSync` method to `unwrapErr`.
+- **\[BREAKING\]** Remove the `Result.match` method.
+- **\[BREAKING\]** Remove the `Result.matchSync` method.
+- **\[BREAKING\]** Rename the `Result.orSync` method to `orElse`.
+- **\[BREAKING\]** Rename the `Result.unwrapErrSync` method to `unwrapErr`.
   This new method no longer accepts a callback to calculate a fallback error.
   If a fallback error is desired, use `unwrapErrOr` or `unwrapErrOrElse` instead.
-- **\[BREAKING\]** Rename the `result/Result.unwrapSync` method to `unwrap`.
+- **\[BREAKING\]** Rename the `Result.unwrapSync` method to `unwrap`.
   This new method no longer accepts a callback to calculate a fallback value.
   If a fallback value is desired, use `unwrapOr` or `unwrapOrElse` instead.
-- **\[BREAKING\]** Remove the `result/Result.whenErr` method.
-- **\[BREAKING\]** Remove the `result/Result.whenErrSync` method.
-- **\[BREAKING\]** Remove the `result/Result.whenOk` method.
-- **\[BREAKING\]** Remove the `result/Result.whenOkSync` method.
-- **\[BREAKING\]** Remove the `result/ResultingResult` extension.
+- **\[BREAKING\]** Remove the `Result.whenErr` method.
+- **\[BREAKING\]** Remove the `Result.whenErrSync` method.
+- **\[BREAKING\]** Remove the `Result.whenOk` method.
+- **\[BREAKING\]** Remove the `Result.whenOkSync` method.
+- **\[BREAKING\]** Remove the `ResultingResult` extension.
   Use the `FlattenedResult` extension instead.
   Instead of a `flatten` method, this new extension has a `flattened` getter.
-- **\[BREAKING\]** Remove the `result/ResultingOption` extension.
+- **\[BREAKING\]** Remove the `ResultingOption` extension.
   Use the `TransposedResult` extension instead.
   Instead of a `transpose` method, this new extension has a `transposed` getter.
 - **\[BREAKING\]** Remove the `tuple` library.
   Dart comes with tuples built into the language now.
 
-## 0.4.0
+## 0.4.0 (2022-01-07)
 
 - Introduce asynchronous variants of functions where applicable.
 - **\[BREAKING\]** Numerous functions that were previously synchronous in nature are now
