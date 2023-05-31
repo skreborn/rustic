@@ -1,17 +1,17 @@
-## 0.5.2
+## 0.5.2 (2023-05-12)
 
 Another hotfix that corrects a compilation error.
 
 - Fix `Option.zip` unable to compile due to a type error that the analyzer missed.
 
-## 0.5.1
+## 0.5.1 (2023-05-12)
 
 This is a hotfix release to restore the flexibility of the collect functions that was accidentally
 dropped in the previous version.
 
 - Make collect functions generic over the value type.
 
-## 0.5.0
+## 0.5.0 (2023-05-11)
 
 This is the largest release since the initial one, adding, removing, or otherwise changing countless
 items. The main driver for this is the arrival of Dart 3, which this package will require as a
@@ -141,19 +141,19 @@ in the long run. Real-world usage indicated that the asynchronous versions are s
   `Sync`. **Take extra care when upgrading so you don't end up with asynchronous functions that are
   never awaited.**
 
-## 0.3.0
+## 0.3.0 (2021-03-04)
 
 - **\[BREAKING\]** Reduce maximum tuple item count to 8.
 
-## 0.2.0
+## 0.2.0 (2021-03-04)
 
 - **\[BREAKING\]** Migrate to null-safety. **Requires Dart 2.12.**
 
-## 0.1.1
+## 0.1.1 (2020-12-11)
 
 - Implement unit type.
 
-## 0.1.0
+## 0.1.0 (2020-12-11)
 
 - Implement tuples (up to 16 items).
 - Implement optional values.
