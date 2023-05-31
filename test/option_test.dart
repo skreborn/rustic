@@ -307,4 +307,18 @@ void main() {
       });
     });
   });
+
+  group('IterableOptions', () {
+    group('methods', () {
+      test('collectToList', () {
+        check(const [1, 3, 5, 5].map(filter).collectToList()).equals(const Some([1, 3, 5, 5]));
+        check(const [1, 2, 3, 4, 5, 5].map(filter).collectToList()).equals(const None());
+      });
+
+      test('collectToSet', () {
+        check(const [1, 3, 5, 5].map(filter).collectToSet()).equals(const Some({1, 3, 5}));
+        check(const [1, 2, 3, 4, 5, 5].map(filter).collectToSet()).equals(const None());
+      });
+    });
+  });
 }

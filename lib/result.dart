@@ -684,6 +684,41 @@ extension FlattenedResult<T, E> on Result<Result<T, E>, E> {
   }
 }
 
+/// An extension on an [Iterable] of [Result] items.
+extension IterableResults<T, E> on Iterable<Result<T, E>> {
+  /// Collects an [Iterable] of [Result] items into a single [Result] containing a [List].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// Result<int, String> validate(int n) => n % 2 != 0 ? Ok(n) : Err('even: $n');
+  ///
+  /// // prints "Ok([1, 3, 5, 5])"
+  /// print(const [1, 3, 5, 5].map(validate).collectToList());
+  ///
+  /// // prints "Err(even: 2)"
+  /// print(const [1, 2, 3, 4, 5, 5].map(validate).collectToList());
+  /// ```
+  @useResult
+  Result<List<T>, E> collectToList() => Result.collect((check) => Ok(map<T>(check).toList()));
+
+  /// Collects an [Iterable] of [Result] items into a single [Result] containing a [Set].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// Result<int, String> validate(int n) => n % 2 != 0 ? Ok(n) : Err('even: $n');
+  ///
+  /// // prints "Ok({1, 3, 5})"
+  /// print(const [1, 3, 5, 5].map(validate).collectToSet());
+  ///
+  /// // prints "Err(even: 2)"
+  /// print(const [1, 2, 3, 4, 5, 5].map(validate).collectToSet());
+  /// ```
+  @useResult
+  Result<Set<T>, E> collectToSet() => Result.collect((check) => Ok(map<T>(check).toSet()));
+}
+
 /// A successful [Result].
 final class Ok<T, E> extends Result<T, E> {
   /// The contained value.

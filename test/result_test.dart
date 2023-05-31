@@ -320,4 +320,18 @@ void main() {
       });
     });
   });
+
+  group('IterableResults', () {
+    group('methods', () {
+      test('collectToList', () {
+        check(const [1, 3, 5, 5].map(validate).collectToList()).equals(const Ok([1, 3, 5, 5]));
+        check(const [1, 2, 3, 4, 5, 5].map(validate).collectToList()).equals(const Err('even: 2'));
+      });
+
+      test('collectToSet', () {
+        check(const [1, 3, 5, 5].map(validate).collectToSet()).equals(const Ok({1, 3, 5}));
+        check(const [1, 2, 3, 4, 5, 5].map(validate).collectToSet()).equals(const Err('even: 2'));
+      });
+    });
+  });
 }

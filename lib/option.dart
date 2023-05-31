@@ -629,6 +629,41 @@ extension FlattenedOption<T> on Option<Option<T>> {
   }
 }
 
+/// An extension on an [Iterable] of [Option] items.
+extension IterableOptions<T> on Iterable<Option<T>> {
+  /// Collects an [Iterable] of [Option] items into a single [Option] containing a [List].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// Option<int> filter(int n) => n % 2 != 0 ? Some(n) : const None();
+  ///
+  /// // prints "Some([1, 3, 5, 5])"
+  /// print(const [1, 3, 5, 5].map(filter).collectToList());
+  ///
+  /// // prints "None"
+  /// print(const [1, 2, 3, 4, 5, 5].map(filter).collectToList());
+  /// ```
+  @useResult
+  Option<List<T>> collectToList() => Option.collect((check) => Some(map<T>(check).toList()));
+
+  /// Collects an [Iterable] of [Option] items into a single [Option] containing a [Set].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// Option<int> filter(int n) => n % 2 != 0 ? Some(n) : const None();
+  ///
+  /// // prints "Some({1, 3, 5})"
+  /// print(const [1, 3, 5, 5].map(filter).collectToSet());
+  ///
+  /// // prints "None"
+  /// print(const [1, 2, 3, 4, 5, 5].map(filter).collectToSet());
+  /// ```
+  @useResult
+  Option<Set<T>> collectToSet() => Option.collect((check) => Some(map<T>(check).toSet()));
+}
+
 /// An [Option] with a value.
 final class Some<T> extends Option<T> {
   /// The contained value.

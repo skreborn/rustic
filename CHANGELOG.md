@@ -4,6 +4,8 @@ The equality constraints change in this release, as they now utilize [DeepCollec
 from the [collection](https://pub.dev/packages/collection) package.
 
 - **\[BREAKING\]** Compare contained values and errors for `Option`s and `Result`s recursively.
+- Add the `IterableOptions` extension.
+- Add the `IterableResults` extension.
 
 [deep]: https://pub.dev/documentation/collection/latest/collection/DeepCollectionEquality-class.html
 
