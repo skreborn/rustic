@@ -51,12 +51,14 @@ sealed class Option<T> {
   /// # Examples
   ///
   /// ```dart
-  /// final collected = Option.collect<int>((check) {
+  /// Option<int> filter(int n) => n % 2 != 0 ? Some(n) : const None();
+  ///
+  /// final collected = Option.collect((check) {
   ///   // This passes the check and `first` gets the value `2`
-  ///   final first = check(const Some(2));
+  ///   final first = check(filter(1));
   ///
   ///   // This fails the check and no value is returned from the collector
-  ///   final second = check(const None<int>());
+  ///   final second = check(filter(2));
   ///
   ///   // This is never reached
   ///   return Some(first + second);
@@ -88,12 +90,14 @@ sealed class Option<T> {
   /// # Examples
   ///
   /// ```dart
-  /// final collected = await Option.collectAsync<int>((check) async {
+  /// Option<int> filter(int n) => n % 2 != 0 ? Some(n) : const None();
+  ///
+  /// final collected = await Option.collectAsync((check) async {
   ///   // This passes the check and `first` gets the value `2`
-  ///   final first = check(await Future.value(const Some(2)));
+  ///   final first = check(await Future.value(filter(1)));
   ///
   ///   // This fails the check and no value is returned from the collector
-  ///   final second = check(await Future.value(const None<int>()));
+  ///   final second = check(await Future.value(filter(2)));
   ///
   ///   // This is never reached
   ///   return Some(first + second);

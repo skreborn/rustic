@@ -55,21 +55,25 @@ sealed class Result<T, E> {
   /// # Examples
   ///
   /// ```dart
+  /// Result<int, String> validate(int n) => n % 2 != 0 ? Ok(n) : Err('even: $n');
+  ///
   /// final collected = Result.collect<int, String>((check) {
   ///   // This passes the check and `first` gets the value `2`
-  ///   final first = check(const Ok(2));
+  ///   final first = check(validate(1));
   ///
   ///   // This fails the check and the error is returned from the collector
-  ///   final second = check(const Err<int, String>('error'));
+  ///   final second = check(validate(2));
   ///
   ///   // This is never reached
   ///   return Ok(first + second);
   /// });
   ///
-  /// // prints "Err(error)"
+  /// // prints "Err(even: 2)"
   /// print(collected);
   /// ```
   @useResult
+  @factory
+  // ignore: invalid_factory_method_impl
   static Result<T, E> collect<T, E>(
     Result<T, E> Function(U Function<U>(Result<U, E> result) check) collector,
   ) {
@@ -92,21 +96,25 @@ sealed class Result<T, E> {
   /// # Examples
   ///
   /// ```dart
+  /// Result<int, String> validate(int n) => n % 2 != 0 ? Ok(n) : Err('even: $n');
+  ///
   /// final collected = await Result.collectAsync<int, String>((check) async {
   ///   // This passes the check and `first` gets the value `2`
-  ///   final first = check(await Future.value(const Ok(2)));
+  ///   final first = check(await Future.value(validate(1)));
   ///
   ///   // This fails the check and the error is returned from the collector
-  ///   final second = check(await Future.value(const Err<int, String>('error')));
+  ///   final second = check(await Future.value(validate(2)));
   ///
   ///   // This is never reached
   ///   return Ok(first + second);
   /// });
   ///
-  /// // prints "Err(error)"
+  /// // prints "Err(even: 2)"
   /// print(collected);
   /// ```
   @useResult
+  @factory
+  // ignore: invalid_factory_method_impl
   static Future<Result<T, E>> collectAsync<T, E>(
     FutureOr<Result<T, E>> Function(U Function<U>(Result<U, E> result) check) collector,
   ) async {
