@@ -6,6 +6,8 @@ from the [collection](https://pub.dev/packages/collection) package.
 - **\[BREAKING\]** Compare contained values and errors for `Option`s and `Result`s recursively.
 - Add the `IterableOptions` extension.
 - Add the `IterableResults` extension.
+- Fix a runtime type mismatch exception thrown when comparing `Result` instances with differing
+  `value` or `error` types.
 - Introduce the `util` library.
 - Add the `upcast` utility function.
 

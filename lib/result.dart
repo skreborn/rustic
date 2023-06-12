@@ -776,7 +776,7 @@ final class Ok<T, E> extends Result<T, E> {
 
   @override
   @useResult
-  operator ==(covariant Result<T, E> other) {
+  operator ==(covariant Result<T, Object?> other) {
     return switch (other) {
       Ok(:final value) => const DeepCollectionEquality().equals(this.value, value),
       Err() => false,
@@ -941,7 +941,7 @@ final class Err<T, E> extends Result<T, E> {
 
   @override
   @useResult
-  operator ==(covariant Result<T, E> other) {
+  operator ==(covariant Result<Object?, E> other) {
     return switch (other) {
       Ok() => false,
       Err(:final error) => const DeepCollectionEquality().equals(this.error, error),
