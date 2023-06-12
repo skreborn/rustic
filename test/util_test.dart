@@ -1,44 +1,45 @@
+import 'package:rustic/option.dart';
 import 'package:rustic/result.dart';
 import 'package:checks/checks.dart';
 import 'package:rustic/util.dart';
 import 'package:test/test.dart';
 
-sealed class _Ok {
-  const _Ok();
+sealed class _Kind {
+  const _Kind();
 }
 
-final class _OkA extends _Ok {
-  const _OkA();
+final class _KindA extends _Kind {
+  const _KindA();
 }
 
-final class _OkB extends _Ok {
-  const _OkB();
-}
-
-sealed class _Err {
-  const _Err();
-}
-
-final class _ErrA extends _Err {
-  const _ErrA();
-}
-
-final class _ErrB extends _Err {
-  const _ErrB();
+final class _KindB extends _Kind {
+  const _KindB();
 }
 
 void main() {
   group('utilities', () {
-    test('upcast', () {
-      const okA = Ok<_OkA, _ErrA>(_OkA());
-      const okB = Ok<_OkB, _ErrB>(_OkB());
+    group('upcast', () {
+      test('Result', () {
+        const okA = Ok<_KindA, _KindA>(_KindA());
+        const okB = Ok<_KindB, _KindB>(_KindB());
 
-      const errA = Err<_OkA, _ErrA>(_ErrA());
-      const errB = Err<_OkB, _ErrB>(_ErrB());
+        const errA = Err<_KindA, _KindA>(_KindA());
+        const errB = Err<_KindB, _KindB>(_KindB());
 
-      final chain = okA.or(errA).mapErr<_Err>(upcast).and(okB).map<_Ok>(upcast).or(errB);
+        check(okA.mapErr<_Kind>(upcast).and(okB)).equals(const Ok(_KindB()));
+        check(errA.map<_Kind>(upcast).or(errB)).equals(const Err(_KindB()));
+      });
 
-      check(chain).equals(const Ok(_OkB()));
+      test('Option', () {
+        const someA = Some<_KindA>(_KindA());
+        const someB = Some<_KindB>(_KindB());
+
+        const noneA = None<_KindA>();
+        const noneB = None<_KindB>();
+
+        check(someA.map<_Kind>(upcast).or(someB)).equals(const Some(_KindA()));
+        check(noneA.map<_Kind>(upcast).or(noneB)).equals(const None<_KindB>());
+      });
     });
   });
 }
