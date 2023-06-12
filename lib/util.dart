@@ -1,3 +1,5 @@
+/// Utility functions.
+
 import 'package:rustic/result.dart';
 
 /// Casts [value] to a supertype.
