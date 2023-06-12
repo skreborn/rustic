@@ -7,17 +7,60 @@ typedef _Option = Option<int>;
 typedef _None = None<int>;
 
 void main() {
-  _Option filter(int n) => n % 2 != 0 ? Some(n) : const None();
+  _Option filterOption(int n) => n.isOdd ? Some(n) : const None();
+  int? filterNullable(int n) => n.isOdd ? n : null;
 
   String concat(Object a, Object b) => '$a:$b';
   String stringify(int n) => n.toString();
+
+  group('methods', () {
+    test('collectNullable', () {
+      final none = collectNullable((check) {
+        final first = check(filterNullable(1));
+        final second = check(filterNullable(2));
+
+        return first + second;
+      });
+
+      check(none).isNull();
+
+      final some = collectNullable((check) {
+        final first = check(filterNullable(1));
+        final second = check(filterNullable(3));
+
+        return first + second;
+      });
+
+      check(some).equals(4);
+    });
+
+    test('collectNullableAsync', () {
+      final none = collectNullableAsync((check) async {
+        final first = check(await Future.value(filterNullable(1)));
+        final second = check(await Future.value(filterNullable(2)));
+
+        return first + second;
+      });
+
+      check(none).completes(it()..isNull());
+
+      final some = collectNullableAsync((check) async {
+        final first = check(await Future.value(filterNullable(1)));
+        final second = check(await Future.value(filterNullable(3)));
+
+        return first + second;
+      });
+
+      check(some).completes(it()..equals(4));
+    });
+  });
 
   group('Option', () {
     group('static methods', () {
       test('collect', () {
         final none = Option.collect((check) {
-          final first = check(filter(1));
-          final second = check(filter(2));
+          final first = check(filterOption(1));
+          final second = check(filterOption(2));
 
           return Some(first + second);
         });
@@ -25,8 +68,8 @@ void main() {
         check(none).equals(const None());
 
         final some = Option.collect((check) {
-          final first = check(filter(1));
-          final second = check(filter(3));
+          final first = check(filterOption(1));
+          final second = check(filterOption(3));
 
           return Some(first + second);
         });
@@ -36,8 +79,8 @@ void main() {
 
       test('collectAsync', () {
         final none = Option.collectAsync((check) async {
-          final first = check(await Future.value(filter(1)));
-          final second = check(await Future.value(filter(2)));
+          final first = check(await Future.value(filterOption(1)));
+          final second = check(await Future.value(filterOption(2)));
 
           return Some(first + second);
         });
@@ -45,8 +88,8 @@ void main() {
         check(none).completes(it()..equals(const None()));
 
         final some = Option.collectAsync((check) async {
-          final first = check(await Future.value(filter(1)));
-          final second = check(await Future.value(filter(3)));
+          final first = check(await Future.value(filterOption(1)));
+          final second = check(await Future.value(filterOption(3)));
 
           return Some(first + second);
         });
@@ -271,10 +314,173 @@ void main() {
   });
 
   group('Optional', () {
+    const int? n = null;
+
     group('properties', () {
       test('optional', () {
         check(2.optional).equals(const Some(2));
-        check(Optional<int>(null).optional).equals(const None());
+        check(n.optional).equals(const None());
+      });
+    });
+
+    group('methods', () {
+      group('isNotNullAnd', () {
+        test('non-null', () {
+          check(2.isNotNullAnd((value) => value == 2)).isTrue();
+          check(2.isNotNullAnd((value) => value == 3)).isFalse();
+        });
+
+        test('null', () {
+          check(n.isNotNullAnd((value) => value == 2)).isFalse();
+        });
+      });
+
+      group('inspect', () {
+        test('non-null', () {
+          int? calledWith;
+
+          check(2.inspect((value) => calledWith = value)).equals(2);
+
+          check(calledWith).equals(2);
+        });
+
+        test('null', () {
+          int? calledWith;
+
+          check(n.inspect((value) => calledWith = value)).isNull();
+
+          check(calledWith).isNull();
+        });
+      });
+
+      group('map', () {
+        test('non-null', () => check(2.map(stringify)).equals('2'));
+        test('null', () => check(n.map(stringify)).isNull());
+      });
+
+      group('mapOr', () {
+        test('non-null', () => check(2.mapOr(stringify, 'null')).equals('2'));
+        test('null', () => check(n.mapOr(stringify, 'null')).equals('null'));
+      });
+
+      group('mapOrElse', () {
+        test('non-null', () => check(2.mapOrElse(stringify, () => 'null')).equals('2'));
+        test('null', () => check(n.mapOrElse(stringify, () => 'null')).equals('null'));
+      });
+
+      group('okOr', () {
+        test('non-null', () => check(2.okOr('null')).equals(const Ok(2)));
+        test('null', () => check(n.okOr('null')).equals(const Err('null')));
+      });
+
+      group('okOrElse', () {
+        test('non-null', () => check(2.okOrElse(() => 'null')).equals(const Ok(2)));
+        test('null', () => check(n.okOrElse(() => 'null')).equals(const Err('null')));
+      });
+
+      group('and', () {
+        test('non-null', () {
+          check(2.and('other')).equals('other');
+          check(2.and(n)).isNull();
+        });
+
+        test('null', () {
+          check(n.and(const Some('other'))).isNull();
+          check(n.and(n)).isNull();
+        });
+      });
+
+      group('andThen', () {
+        test('non-null', () {
+          check(2.andThen((value) => value.toString())).equals('2');
+          check(2.andThen((value) => n)).isNull();
+        });
+
+        test('null', () {
+          check(n.andThen((value) => Some(value.toString()))).isNull();
+          check(n.andThen((value) => n)).isNull();
+        });
+      });
+
+      group('or', () {
+        test('non-null', () {
+          check(2.or(3)).equals(2);
+          check(2.or(n)).equals(2);
+        });
+
+        test('null', () {
+          check(n.or(3)).equals(3);
+          check(n.or(null)).isNull();
+        });
+      });
+
+      group('orElse', () {
+        test('non-null', () {
+          check(2.orElse(() => 3)).equals(2);
+          check(2.orElse(() => n)).equals(2);
+        });
+
+        test('null', () {
+          check(n.orElse(() => 3)).equals(3);
+          check(n.orElse(() => null)).isNull();
+        });
+      });
+
+      group('xor', () {
+        test('non-null', () {
+          check(2.xor(3)).isNull();
+          check(2.xor(n)).equals(2);
+        });
+
+        test('null', () {
+          check(n.xor(3)).equals(3);
+          check(n.xor(null)).isNull();
+        });
+      });
+
+      group('where', () {
+        test('non-null', () {
+          check(2.where((value) => value == 2)).equals(2);
+          check(2.where((value) => value == 3)).isNull();
+        });
+
+        test('null', () => check(n.where((value) => true)).isNull());
+      });
+
+      group('whereType', () {
+        test('non-null', () {
+          check(2.whereType<int>()).equals(2);
+          check(2.whereType<bool>()).isNull();
+        });
+
+        test('null', () {
+          check(n.whereType<int>()).isNull();
+          check(n.whereType<bool>()).isNull();
+        });
+      });
+
+      group('zip', () {
+        test('non-null', () {
+          check(2.zip('other')).equals(((2, 'other')));
+          check(2.zip(n)).isNull();
+        });
+
+        test('null', () {
+          check(n.zip(const Some('other'))).isNull();
+          check(n.zip(n)).isNull();
+        });
+      });
+
+      group('zipWith', () {
+        test('non-null', () {
+          check(2.zipWith(true, concat)).equals(('2:true'));
+          check(2.zipWith(n, concat)).isNull();
+        });
+
+        test('null', () {
+          check(n.zipWith(const Some(true), concat)).isNull();
+          check(n.zipWith(n, concat)).isNull();
+        });
       });
     });
   });
@@ -310,14 +516,34 @@ void main() {
 
   group('IterableOptions', () {
     group('methods', () {
+      const odd = [1, 3, 5, 5];
+      const mixed = [1, 2, 3, 4, 5, 5];
+
       test('collectToList', () {
-        check(const [1, 3, 5, 5].map(filter).collectToList()).equals(const Some([1, 3, 5, 5]));
-        check(const [1, 2, 3, 4, 5, 5].map(filter).collectToList()).equals(const None());
+        check(odd.map(filterOption).collectToList()).equals(const Some([1, 3, 5, 5]));
+        check(mixed.map(filterOption).collectToList()).equals(const None());
       });
 
       test('collectToSet', () {
-        check(const [1, 3, 5, 5].map(filter).collectToSet()).equals(const Some({1, 3, 5}));
-        check(const [1, 2, 3, 4, 5, 5].map(filter).collectToSet()).equals(const None());
+        check(odd.map(filterOption).collectToSet()).equals(const Some({1, 3, 5}));
+        check(mixed.map(filterOption).collectToSet()).equals(const None());
+      });
+    });
+  });
+
+  group('IterableNullables', () {
+    group('methods', () {
+      const odd = [1, 3, 5, 5];
+      const mixed = [1, 2, 3, 4, 5, 5];
+
+      test('collectToList', () {
+        check(odd.map(filterNullable).collectToList()).isNotNull().deepEquals([1, 3, 5, 5]);
+        check(mixed.map(filterNullable).collectToList()).isNull();
+      });
+
+      test('collectToSet', () {
+        check(odd.map(filterNullable).collectToSet()).isNotNull().deepEquals({1, 3, 5});
+        check(mixed.map(filterNullable).collectToSet()).isNull();
       });
     });
   });

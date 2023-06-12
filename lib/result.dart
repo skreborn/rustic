@@ -55,7 +55,7 @@ sealed class Result<T, E> {
   /// # Examples
   ///
   /// ```dart
-  /// Result<int, String> validate(int n) => n % 2 != 0 ? Ok(n) : Err('even: $n');
+  /// Result<int, String> validate(int n) => n.isOdd ? Ok(n) : Err('even: $n');
   ///
   /// final collected = Result.collect<int, String>((check) {
   ///   // This passes the check and `first` gets the value `2`
@@ -96,7 +96,7 @@ sealed class Result<T, E> {
   /// # Examples
   ///
   /// ```dart
-  /// Result<int, String> validate(int n) => n % 2 != 0 ? Ok(n) : Err('even: $n');
+  /// Result<int, String> validate(int n) => n.isOdd ? Ok(n) : Err('even: $n');
   ///
   /// final collected = await Result.collectAsync<int, String>((check) async {
   ///   // This passes the check and `first` gets the value `2`
@@ -691,7 +691,7 @@ extension IterableResults<T, E> on Iterable<Result<T, E>> {
   /// # Examples
   ///
   /// ```dart
-  /// Result<int, String> validate(int n) => n % 2 != 0 ? Ok(n) : Err('even: $n');
+  /// Result<int, String> validate(int n) => n.isOdd ? Ok(n) : Err('even: $n');
   ///
   /// // prints "Ok([1, 3, 5, 5])"
   /// print(const [1, 3, 5, 5].map(validate).collectToList());
@@ -707,7 +707,7 @@ extension IterableResults<T, E> on Iterable<Result<T, E>> {
   /// # Examples
   ///
   /// ```dart
-  /// Result<int, String> validate(int n) => n % 2 != 0 ? Ok(n) : Err('even: $n');
+  /// Result<int, String> validate(int n) => n.isOdd ? Ok(n) : Err('even: $n');
   ///
   /// // prints "Ok({1, 3, 5})"
   /// print(const [1, 3, 5, 5].map(validate).collectToSet());

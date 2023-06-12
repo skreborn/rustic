@@ -12,6 +12,84 @@ final class _CheckException implements Exception {
   const _CheckException();
 }
 
+/// Encloses any number of operations, optionally returning early on `null`.
+///
+/// See [collectNullableAsync] for an asynchronous version of this function.
+///
+/// # Examples
+///
+/// ```dart
+/// int? filter(int n) => n.isOdd ? n : null;
+///
+/// final collected = collectNullable((check) {
+///   // This passes the check and `first` gets the value `2`
+///   final first = check(filter(1));
+///
+///   // This fails the check and `null` is returned from the collector
+///   final second = check(filter(2));
+///
+///   // This is never reached
+///   return first + second;
+/// });
+///
+/// // prints "null"
+/// print(collected);
+/// ```
+@useResult
+T? collectNullable<T>(T? Function(U Function<U>(U? value) check) collector) {
+  try {
+    return collector(<U>(value) {
+      if (value != null) {
+        return value;
+      }
+
+      throw const _CheckException();
+    });
+  } on _CheckException {
+    return null;
+  }
+}
+
+/// Encloses any number of operations, optionally returning early on `null`.
+///
+/// See [collectNullable] for a synchronous version of this function.
+///
+/// # Examples
+///
+/// ```dart
+/// int? filter(int n) => n.isOdd ? n : null;
+///
+/// final collected = await collectNullableAsync((check) async {
+///   // This passes the check and `first` gets the value `2`
+///   final first = check(await Future.value(filter(1)));
+///
+///   // This fails the check and `null` is returned from the collector
+///   final second = check(await Future.value(filter(2)));
+///
+///   // This is never reached
+///   return first + second;
+/// });
+///
+/// // prints "null"
+/// print(collected);
+/// ```
+@useResult
+Future<T?> collectNullableAsync<T>(
+  FutureOr<T?> Function(U Function<U>(U? value) check) collector,
+) async {
+  try {
+    return await collector(<U>(value) {
+      if (value != null) {
+        return value;
+      }
+
+      throw const _CheckException();
+    });
+  } on _CheckException {
+    return null;
+  }
+}
+
 /// An optional value.
 ///
 /// An [Option] either contains a value ([Some]) or it does not ([None]).
@@ -20,7 +98,7 @@ final class _CheckException implements Exception {
 ///
 /// The following function tries to multiply two integers after parsing them.
 /// Upon success, the resulting value is wrapped in a [Some].
-/// If an error occurs during conversion, a [None] is returned.
+/// If an error occurs during conversion, [None] is returned.
 ///
 /// ```dart
 /// Option<int> multiply(String a, String b) {
@@ -51,13 +129,13 @@ sealed class Option<T> {
   /// # Examples
   ///
   /// ```dart
-  /// Option<int> filter(int n) => n % 2 != 0 ? Some(n) : const None();
+  /// Option<int> filter(int n) => n.isOdd ? Some(n) : const None();
   ///
   /// final collected = Option.collect((check) {
   ///   // This passes the check and `first` gets the value `2`
   ///   final first = check(filter(1));
   ///
-  ///   // This fails the check and no value is returned from the collector
+  ///   // This fails the check and `None` is returned from the collector
   ///   final second = check(filter(2));
   ///
   ///   // This is never reached
@@ -90,13 +168,13 @@ sealed class Option<T> {
   /// # Examples
   ///
   /// ```dart
-  /// Option<int> filter(int n) => n % 2 != 0 ? Some(n) : const None();
+  /// Option<int> filter(int n) => n.isOdd ? Some(n) : const None();
   ///
   /// final collected = await Option.collectAsync((check) async {
   ///   // This passes the check and `first` gets the value `2`
   ///   final first = check(await Future.value(filter(1)));
   ///
-  ///   // This fails the check and no value is returned from the collector
+  ///   // This fails the check and `None` is returned from the collector
   ///   final second = check(await Future.value(filter(2)));
   ///
   ///   // This is never reached
@@ -136,7 +214,7 @@ sealed class Option<T> {
   @useResult
   bool get isSome;
 
-  /// Whether `this` is a [None].
+  /// Whether `this` is [None].
   ///
   /// # Examples
   ///
@@ -186,7 +264,7 @@ sealed class Option<T> {
 
   const Option._();
 
-  /// Creates a [Some] with the given [value], if it is not `null`, or a [None] otherwise.
+  /// Creates a [Some] with the given [value], if it is not `null`, or [None] otherwise.
   ///
   /// # Examples
   ///
@@ -262,7 +340,7 @@ sealed class Option<T> {
   ///
   /// # Throws
   ///
-  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is a [None].
+  /// Throws a [StateError] (with custom message [msg] if provided) if `this` is [None].
   ///
   /// # Examples
   ///
@@ -541,7 +619,7 @@ sealed class Option<T> {
 
 /// An extension on any nullable object.
 extension Optional<T> on T? {
-  /// Creates a [Some] with `this` as its value, if it is not `null`, or a [None] otherwise.
+  /// Creates a [Some] with `this` as its value, if it is not `null`, or [None] otherwise.
   ///
   /// # Examples
   ///
@@ -554,6 +632,334 @@ extension Optional<T> on T? {
   /// ```
   @useResult
   Option<T> get optional => Option(this);
+
+  /// Returns an iterable over `this`.
+  ///
+  /// If `this` is `null`, the resulting iterable is empty, otherwise it has a single element.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "[2]"
+  /// print(2.iterable.toList());
+  ///
+  /// // prints "[]"
+  /// print(null.iterable.toList());
+  /// ```
+  @useResult
+  Iterable<T> get iterable {
+    if (this case T value) {
+      return Iterable.generate(1, (_) => value);
+    }
+
+    return const Iterable.empty();
+  }
+
+  /// Returns `true` if `this` is not `null` and it satisfies [condition].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "true"
+  /// print(2.isNotNullAnd((value) => value == 2));
+  ///
+  /// // prints "false"
+  /// print(null.isNotNullAnd((value) => value == 2));
+  /// ```
+  @useResult
+  bool isNotNullAnd(bool Function(T value) condition) {
+    if (this case T value) {
+      return condition(value);
+    }
+
+    return false;
+  }
+
+  /// Calls [inspect] with `this`, if it is not `null`.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "2"
+  /// 2.inspect(print);
+  ///
+  /// // prints nothing
+  /// null.inspect(print);
+  /// ```
+  @useResult
+  T? inspect(void Function(T value) inspect) {
+    if (this case T value) {
+      inspect(value);
+    }
+
+    return this;
+  }
+
+  /// Transforms `this`, if it is not `null`, by applying [map] to it.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "value: 2"
+  /// print(2.map((value) => 'value: $value'));
+  ///
+  /// // prints "null"
+  /// print(null.map((value) => 'value: $value'));
+  /// ```
+  @useResult
+  U? map<U>(U Function(T value) map) {
+    if (this case T value) {
+      return map(value);
+    }
+
+    return null;
+  }
+
+  /// Returns `this`, if it is not `null`, with [map] applied to it, or [defaultValue] otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "value: 2"
+  /// print(2.mapOr((value) => 'value: $value', 'null'));
+  ///
+  /// // prints "null"
+  /// print(null.mapOr((value) => 'value: $value', 'null'));
+  /// ```
+  @useResult
+  U mapOr<U>(U Function(T value) map, U defaultValue) {
+    if (this case T value) {
+      return map(value);
+    }
+
+    return defaultValue;
+  }
+
+  /// Returns `this`, if it is not `null`, with [map] applied to it, or the result of
+  /// [calculateDefaultValue] otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "value: 2"
+  /// print(2.mapOrElse((value) => 'value: $value', () => 'null'));
+  ///
+  /// // prints "null"
+  /// print(null.mapOrElse((value) => 'value: $value', () => 'null'));
+  /// ```
+  @useResult
+  U mapOrElse<U>(U Function(T value) map, U Function() calculateDefaultValue) {
+    if (this case T value) {
+      return map(value);
+    }
+
+    return calculateDefaultValue();
+  }
+
+  /// Transforms `this` into a [Result], mapping a non-`null` value to an [Ok] of it and a `null`
+  /// value to [Err] of [error].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "Ok(2)"
+  /// print(2.okOr('null'));
+  ///
+  /// // prints "Err(null)"
+  /// print(null.okOr('null'));
+  /// ```
+  @useResult
+  Result<T, E> okOr<E>(E error) {
+    if (this case T value) {
+      return Ok(value);
+    }
+
+    return Err(error);
+  }
+
+  /// Transforms `this` into a [Result], mapping a non-`null` value to an [Ok] of it and a `null`
+  /// value to [Err] of the result of [calculateError].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "Ok(2)"
+  /// print(2.okOrElse(() => 'null'));
+  ///
+  /// // prints "Err(null)"
+  /// print(null.okOrElse(() => 'null'));
+  /// ```
+  @useResult
+  Result<T, E> okOrElse<E>(E Function() calculateError) {
+    if (this case T value) {
+      return Ok(value);
+    }
+
+    return Err(calculateError());
+  }
+
+  /// Returns [other] if `this` is not `null`, or `null` otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "3"
+  /// print(2.and(3));
+  ///
+  /// // prints "null"
+  /// print(null.and(3));
+  /// ```
+  @useResult
+  U? and<U>(U? other) => this != null ? other : null;
+
+  /// Returns the result of [calculateOther] if `this` is not `null`, or `null` otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "3"
+  /// print(2.andThen((value) => 3));
+  ///
+  /// // prints "null"
+  /// print(null.andThen((value) => 3));
+  /// ```
+  @useResult
+  U? andThen<U>(U? Function(T value) calculateOther) {
+    if (this case T value) {
+      return calculateOther(value);
+    }
+
+    return null;
+  }
+
+  /// Returns `this`, if it is not `null`, or [other] otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "2"
+  /// print(2.or(3));
+  ///
+  /// // prints "3"
+  /// print(null.or(3));
+  /// ```
+  @useResult
+  T? or(T? other) => this ?? other;
+
+  /// Returns `this`, if it is not `null`, or the result of [calculateOther] otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "2"
+  /// print(2.orElse(() => 3));
+  ///
+  /// // prints "3"
+  /// print(null.orElse(() => 3));
+  /// ```
+  @useResult
+  T? orElse(T? Function() calculateOther) => this ?? calculateOther();
+
+  /// Returns a non-`null` value if either, but not both, of `this` and [other] is non-`null`, or
+  /// `null` otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "null"
+  /// print(2.xor(3));
+  ///
+  /// // prints "2";
+  /// print(2.xor(null));
+  /// ```
+  @useResult
+  T? xor(T? other) {
+    return switch ((this, other)) {
+      (final T value, null) || (null, final T value) => value,
+      _ => null,
+    };
+  }
+
+  /// Returns `this`, if it is not `null` and it satisfies [condition], or `null` otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "2"
+  /// print(2.where((value) => true));
+  ///
+  /// // prints "null"
+  /// print(2.where((value) => false));
+  /// ```
+  @useResult
+  T? where(bool Function(T value) condition) {
+    if (this case T value when condition(value)) {
+      return value;
+    }
+
+    return null;
+  }
+
+  /// Returns `this`, if it is not `null` and it is of type [U], or `null` otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "2"
+  /// print(2.whereType<int>());
+  ///
+  /// // prints "null"
+  /// print(2.whereType<bool>());
+  /// ```
+  @useResult
+  U? whereType<U>() {
+    if (this case final U value) {
+      return value;
+    }
+
+    return null;
+  }
+
+  /// Returns a tuple of both `this` and [other] if both are non-`null`, or `null` otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "(2, value)"
+  /// print(2.zip('value'));
+  ///
+  /// // prints "null"
+  /// print(2.zip(null));
+  /// ```
+  @useResult
+  (T, U)? zip<U>(U? other) {
+    if ((this, other) case final (T, U) pair) {
+      return pair;
+    }
+
+    return null;
+  }
+
+  /// Returns the result of [zip] called with both `this` and [other] if both are non-`null`, or
+  /// `null` otherwise.
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// // prints "(2, value)"
+  /// print(2.zipWith('value', (a, b) => (a, b)));
+  ///
+  /// // prints "null"
+  /// print(2.zipWith(null, (a, b) => (a, b)));
+  /// ```
+  @useResult
+  R? zipWith<U, R>(U? other, R Function(T value, U otherValue) zip) {
+    if ((this, other) case (final T value, final U otherValue)) {
+      return zip(value, otherValue);
+    }
+
+    return null;
+  }
 }
 
 /// An extension on an [Option] containing a [Result].
@@ -582,7 +988,7 @@ extension UnzippedOption<T, U> on Option<(T, U)> {
 extension TransposedOption<T, E> on Option<Result<T, E>> {
   /// An [Option] containing a [Result] transposed into a [Result] containing an [Option].
   ///
-  /// A [None] will be mapped to an [Ok] with a [None] value. A [Some] with an [Ok] value will be
+  /// [None] will be mapped to an [Ok] with a [None] value. A [Some] with an [Ok] value will be
   /// mapped to an [Ok] with a [Some] value, and a [Some] with an [Err] value will be mapped to an
   /// [Err].
   ///
@@ -636,7 +1042,7 @@ extension IterableOptions<T> on Iterable<Option<T>> {
   /// # Examples
   ///
   /// ```dart
-  /// Option<int> filter(int n) => n % 2 != 0 ? Some(n) : const None();
+  /// Option<int> filter(int n) => n.isOdd ? Some(n) : const None();
   ///
   /// // prints "Some([1, 3, 5, 5])"
   /// print(const [1, 3, 5, 5].map(filter).collectToList());
@@ -652,7 +1058,7 @@ extension IterableOptions<T> on Iterable<Option<T>> {
   /// # Examples
   ///
   /// ```dart
-  /// Option<int> filter(int n) => n % 2 != 0 ? Some(n) : const None();
+  /// Option<int> filter(int n) => n.isOdd ? Some(n) : const None();
   ///
   /// // prints "Some({1, 3, 5})"
   /// print(const [1, 3, 5, 5].map(filter).collectToSet());
@@ -662,6 +1068,41 @@ extension IterableOptions<T> on Iterable<Option<T>> {
   /// ```
   @useResult
   Option<Set<T>> collectToSet() => Option.collect((check) => Some(map<T>(check).toSet()));
+}
+
+/// An extension on an [Iterable] of nullable items.
+extension IterableNullables<T> on Iterable<T?> {
+  /// Collects an [Iterable] of nullable items into a single nullable [List].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// int? filter(int n) => n.isOdd ? n : null;
+  ///
+  /// // prints "[1, 3, 5, 5]"
+  /// print(const [1, 3, 5, 5].map(filter).collectToList());
+  ///
+  /// // prints "null"
+  /// print(const [1, 2, 3, 4, 5, 5].map(filter).collectToList());
+  /// ```
+  @useResult
+  List<T>? collectToList() => collectNullable((check) => map<T>(check).toList());
+
+  /// Collects an [Iterable] of nullable items into a single nullable [Set].
+  ///
+  /// # Examples
+  ///
+  /// ```dart
+  /// int? filter(int n) => n.isOdd ? n : null;
+  ///
+  /// // prints "{1, 3, 5}"
+  /// print(const [1, 3, 5, 5].map(filter).collectToSet());
+  ///
+  /// // prints "null"
+  /// print(const [1, 2, 3, 4, 5, 5].map(filter).collectToSet());
+  /// ```
+  @useResult
+  Set<T>? collectToSet() => collectNullable((check) => map<T>(check).toSet());
 }
 
 /// An [Option] with a value.

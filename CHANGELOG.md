@@ -3,13 +3,34 @@
 The equality constraints change in this release, as they now utilize [DeepCollectionEquality][deep]
 from the [collection](https://pub.dev/packages/collection) package.
 
+A number of methods have been added to the `Optional` extension, allowing for the inspection and
+manipulation of plain nullable values similarly to an `Option` without having to wrap it.
+
 - **\[BREAKING\]** Compare contained values and errors for `Option`s and `Result`s recursively.
-- Add the `IterableOptions` extension.
-- Add the `IterableResults` extension.
 - Fix a runtime type mismatch exception thrown when comparing `Result` instances with differing
   `value` or `error` types.
 - Introduce the `util` library.
 - Add the `upcast` utility function.
+- Add the `collectNullable` and `collectNullableAsync` functions.
+- Add the `isNotNullAnd` method to the `Optional` extension.
+- Add the `inspect` method to the `Optional` extension.
+- Add the `map` method to the `Optional` extension.
+- Add the `mapOr` method to the `Optional` extension.
+- Add the `mapOrElse` method to the `Optional` extension.
+- Add the `okOr` method to the `Optional` extension.
+- Add the `okOrElse` method to the `Optional` extension.
+- Add the `and` method to the `Optional` extension.
+- Add the `andThen` method to the `Optional` extension.
+- Add the `or` method to the `Optional` extension.
+- Add the `orElse` method to the `Optional` extension.
+- Add the `xor` method to the `Optional` extension.
+- Add the `where` method to the `Optional` extension.
+- Add the `whereType` method to the `Optional` extension.
+- Add the `zip` method to the `Optional` extension.
+- Add the `zipWith` method to the `Optional` extension.
+- Add the `IterableOptions` extension.
+- Add the `IterableNullables` extension.
+- Add the `IterableResults` extension.
 
 [deep]: https://pub.dev/documentation/collection/latest/collection/DeepCollectionEquality-class.html
 

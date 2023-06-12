@@ -8,7 +8,7 @@ typedef _Ok<T> = Ok<T, String>;
 typedef _Err<E> = Err<int, E>;
 
 void main() {
-  _Result validate(int n) => n % 2 != 0 ? Ok(n) : Err('even: $n');
+  _Result validate(int n) => n.isOdd ? Ok(n) : Err('even: $n');
 
   int triple(int n) => n * 3;
   int length(String s) => s.length;
